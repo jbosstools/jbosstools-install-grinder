@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature id="org.jboss.tools.installation-tests.feature" label="Installation tests plugins" version="4.1.0.qualifier" provider-name="JBoss by Red Hat">
+
+   <plugin id="org.jboss.tools.tests.installation" version="0.0.0"/>
+
+</feature>
+
