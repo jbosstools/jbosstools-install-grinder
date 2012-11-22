@@ -7,11 +7,8 @@
   <baseDirectory>/</baseDirectory>
   <fileSets>
     <fileSet>
-      <directory>${project.basedir}</directory>
+      <directory>${project.basedir}/src/main/groovy</directory>
       <outputDirectory>/</outputDirectory>
-      <includes>
-        <include>*.sh</include>
-      </includes>
       <fileMode>777</fileMode>
     </fileSet>
     <fileSet>
@@ -25,6 +22,9 @@
   </fileSets>
   <dependencySets>
   	<dependencySet>
+		<includes>
+			<include>org.jboss.tools.installation-tests:repository</include>
+		</includes>
   		<outputDirectory>/repository</outputDirectory>
   		<unpack>true</unpack>
   	</dependencySet>

@@ -23,7 +23,37 @@
         		<artifactId>gmaven-runtime-2.0</artifactId>
 	        	<version>1.4</version>
     		</dependency>
+		<dependency>
+			<groupId>org.jboss.tools.installation-tests</groupId>
+			<artifactId>repository</artifactId>
+			<version>4.1.0-SNAPSHOT</version>
+			<type>zip</type>
+			<scope>runtime</scope>
+		</dependency>
 	</dependencies>
 
 	<!-- TODO make an assembly made of Groovy script + repository for immediate local usage (no remote URL) -->
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.3</version>
+				<executions>
+					<execution>
+						<id>make-assembly</id> <!-- this is used for inheritance merges -->
+						<phase>package</phase> <!-- bind to the packaging phase -->
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<descriptors>
+						<descriptor>assembly.xml</descriptor>
+					</descriptors>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>
