@@ -126,6 +126,13 @@ if(System.properties['IUs'] && (args.length != 2)){
 
 println "Preparing tests, installing framework";
 
+String companionRepoLocation = System.getProperty("companionRepo");
+if (companionRepoLocation == null) {
+	companionRepoLocation = getClass().protectionDomain.codeSource.location.path;
+	companionRepoLocation = companionRepoLocation[0..companionRepoLocation.lastIndexOf('/')];
+	companionRepoLocation += "repository";
+	println companionRepoLocation;
+}
 // Install test framework
 Java proc = new org.apache.tools.ant.taskdefs.Java();
 proc.setDir(eclipseHome);
@@ -133,12 +140,15 @@ proc.setFork(true);
 proc.setJar(new File(eclipseHome, "plugins").listFiles().find({it.getName().startsWith("org.eclipse.equinox.launcher_") && it.getName().endsWith(".jar")}).getAbsoluteFile());
 proc.setArgs("-application org.eclipse.equinox.p2.director " +
 		"-repository http://download.eclipse.org/technology/swtbot/helios/dev-build/update-site/," +
-		"http://download.jboss.org/jbosstools/builds/staging/jbosstools-4.0_trunk.component--install-tests/all/repo/ " +
+		"file:/" + companionRepoLocation + " " +
 		"-installIU org.jboss.tools.tests.installation " +
 		"-installIU org.eclipse.swtbot.eclipse.test.junit4.feature.group " +
 		"-consolelog");
 proc.init();
 int returnCode = proc.executeJava();
+if (returnCode != 0) {
+	System.exit(3);
+}
 
 File iniFile;
 String osName = System.properties['os.name'].toLowerCase();
