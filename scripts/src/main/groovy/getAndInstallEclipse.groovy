@@ -15,6 +15,14 @@ String eclipseFlavour = allProperties['eclipseFlavour'] != null ? allProperties[
 String releaseTrainId = allProperties['releaseTrainId'] != null ? allProperties['releaseTrainId'] : "juno";
 String versionLabel = allProperties['versionLabel'] != null ? allProperties['versionLabel'] : "SR1";
 String mirrorSite = allProperties['mirror'] != null ? allProperties['mirror'] : "http://www.eclipse.org/downloads/download.php?r=1&file=/technology/epp/downloads/release";
+String eclipseBundleVersion = allProperties['eclipseBundleVersion']
+if (eclipseBundleVersion != null) {
+	String[] split = eclipseBundleVersion.split("\\.")
+	if (split.length == 2) {
+		releaseTrainId = split[0]
+		versionLabel = split[1]
+	}
+}
 
 
 if (!eclipseCacheDirectory.canWrite()) {
