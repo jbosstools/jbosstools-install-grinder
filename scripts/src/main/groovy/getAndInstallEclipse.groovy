@@ -1,11 +1,20 @@
 import groovy.util.AntBuilder
 import org.apache.tools.ant.taskdefs.Get;
 
-File eclipseCacheDirectory = System.properties['eclipseCacheDirectory'] != null ? new File(System.properties['eclipseCacheDirectory']) : new File(".");
-String eclipseFlavour = System.properties['eclipseFlavour'] != null ? System.properties['eclipseFlavour'] : "jee";
-String releaseTrainId = System.properties['releaseTrainId'] != null ? System.properties['releaseTrainId'] : "juno";
-String versionLabel = System.properties['versionLabel'] != null ? System.properties['versionLabel'] : "SR1";
-String mirrorSite = System.properties['mirror'] != null ? System.properties['mirror'] : "http://www.eclipse.org/downloads/download.php?r=1&file=/technology/epp/downloads/release";
+Properties allProperties = new Properties();
+allProperties.putAll System.properties;
+args.each {
+	String[] split = it.split("=")
+	if (split.length == 2) {
+		allProperties.put(split[0], split[1])
+	}
+}
+
+File eclipseCacheDirectory = allProperties['eclipseCacheDirectory'] != null ? new File(allProperties['eclipseCacheDirectory']) : new File(".");
+String eclipseFlavour = allProperties['eclipseFlavour'] != null ? allProperties['eclipseFlavour'] : "jee";
+String releaseTrainId = allProperties['releaseTrainId'] != null ? allProperties['releaseTrainId'] : "juno";
+String versionLabel = allProperties['versionLabel'] != null ? allProperties['versionLabel'] : "SR1";
+String mirrorSite = allProperties['mirror'] != null ? allProperties['mirror'] : "http://www.eclipse.org/downloads/download.php?r=1&file=/technology/epp/downloads/release";
 
 
 if (!eclipseCacheDirectory.canWrite()) {
