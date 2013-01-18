@@ -36,6 +36,7 @@ void installRepo(String repoUrl, File eclipseHome, String productName) {
     
         String ius = System.properties['IUs'];
         if(ius != null){
+            ius=ius.replaceAll(("\"","");
             println("Units to install:" + ius);
             additionalVMArgs += " -DIUs=\"" + ius + "\"";
         }
