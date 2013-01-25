@@ -45,8 +45,6 @@ void installRepo(String repoUrl, File eclipseHome, String productName) {
 
 void runSWTBotInstallRoutine(File eclipseHome, String productName, String additionalVMArgs, String testClassName) {
 	String report = "TEST-install-" + new SimpleDateFormat("yyyyMMddh-hmm").format(new Date()) + ".xml";
-	File output = File.createTempFile("install", ".txt");
-	output.deleteOnExit();
 	
 	String specificVMArgs="";
 	String osName = System.properties['os.name'].toLowerCase();
@@ -57,7 +55,6 @@ void runSWTBotInstallRoutine(File eclipseHome, String productName, String additi
 	Java proc = new org.apache.tools.ant.taskdefs.Java();
 	proc.setFork(true);
 	proc.setDir(eclipseHome);
-	proc.setOutput(output);
 	proc.setJvmargs(additionalVMArgs + " " +
 			specificVMArgs   + " " +
 			"-Dorg.eclipse.swtbot.search.timeout=30000 " +
@@ -80,12 +77,15 @@ void runSWTBotInstallRoutine(File eclipseHome, String productName, String additi
 		System.exit(1);
 	}
 
-	output.eachLine { line ->
-		if (line.contains("Failures:")) {
-			if (line.contains("Failures: 0, Errors: 0")) {
+	File report_file = new File(eclipseHome.getAbsolutePath() + "/" + report);
+
+	report_file.eachLine { line ->
+		if (line.contains("failures")) {
+			if (line.contains("errors=\"0\" failures=\"0\"")) {
+				println("Install SUCCESS. Read " + report + " for more details.");
 				return;
 			} else {
-				println("Failed to install. Read " + report + " for details and see screenshots/")
+				println("Failed to install. Read " + report + " for details and see screenshots/");
 				System.exit(1);
 			}
 		}
