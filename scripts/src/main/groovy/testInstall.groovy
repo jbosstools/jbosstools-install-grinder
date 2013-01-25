@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat;
 void usage() {
         println "-------------------------------------------------------------";
 	println "Script to test installation";
-	println "usage: groovy.sh testInstall.groovy <eclipse_home> <file_containing_list_of_sites|repository_url|CHECK_FOR_UPDATES>(,)*";
+	println "usage: groovy.sh testInstall.groovy <eclipse_home> <file_containing_list_of_sites|repository_url|CHECK_FOR_UPDATES>(;)*";
 	println "   <eclipse_home>: an eclipse installation will be performed on";
 	println "   <file_containing_list_of_sites> a file containing a list of p2-friendly URLs of repositories";
 	println "                                   separated by spaces or line breaks";
@@ -169,8 +169,8 @@ println ("Product is: " + productName);
 
 def sites = [];
 args[1..-1].each {
-	// Allow comma-separated lists as well
-	sites.addAll it.split(",")
+	// Allow semicolon-separated lists as well
+	sites.addAll it.split(";")
 }
 sites.each {
 	if (new File(it).isFile()) {
