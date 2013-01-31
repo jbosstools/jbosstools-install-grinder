@@ -123,13 +123,19 @@ public class InstallTest extends SWTBotEclipseTestCase {
 		
 	}
 
+
 	public static void continueInstall(final SWTWorkbenchBot bot) throws InstallFailureException {
+		continueInstall(bot, "Installing Software");
+	}
+
+
+	public static void continueInstall(final SWTWorkbenchBot bot, final String shellTitle) throws InstallFailureException {
 		try {
 			bot.button("Next >").click();
 			bot.radio(0).click();
 			bot.button("Finish").click();
 			// wait for Security pop-up, or install finished.
-			final SWTBotShell shell = bot.shell("Installing Software");
+			final SWTBotShell shell = bot.shell(shellTitle);
 			bot.waitWhile(new ICondition() {
 				
 				@Override
@@ -145,7 +151,7 @@ public class InstallTest extends SWTBotEclipseTestCase {
 				public String getFailureMessage() {
 					return null;
 				}
-			}, 60 * 60000); // 40 minutes_tino
+			}, 60 * 60000); // 60 minutes_tino
 			if (bot.activeShell().getText().equals("Security Warning")) {
 				bot.button("OK").click();
 				System.err.println("OK clicked");
@@ -153,7 +159,7 @@ public class InstallTest extends SWTBotEclipseTestCase {
 					@Override
 					public boolean test() throws Exception {
 						try {
-							boolean stillOpen = bot.shell("Installing Software").isOpen();
+							boolean stillOpen = bot.shell(shellTitle).isOpen();
 							System.err.println("still open? " + stillOpen);
 							return !stillOpen;
 						} catch (WidgetNotFoundException ex) {
@@ -190,6 +196,7 @@ public class InstallTest extends SWTBotEclipseTestCase {
 			throw new InstallFailureException(installDesc);
 		}
 	}
+
 
 	/**
 	 * Checks IU (Category, or Feature) in a tree

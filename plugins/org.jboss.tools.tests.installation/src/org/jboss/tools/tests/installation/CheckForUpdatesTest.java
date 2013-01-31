@@ -39,6 +39,7 @@ public class CheckForUpdatesTest extends SWTBotEclipseTestCase {
 				return "Blocking while calculating deps";
 			}
 		}, 10 * 60000); // 5 minutes timeout
-		InstallTest.continueInstall(bot);
+		bot.button("Next >").click();
+		InstallTest.continueInstall(bot, "Updating Software");
 	}
 }
