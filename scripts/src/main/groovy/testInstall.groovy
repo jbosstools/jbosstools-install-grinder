@@ -1,4 +1,6 @@
 import org.apache.tools.ant.taskdefs.Java;
+import org.apache.tools.ant.taskdefs.Get;
+import groovy.util.AntBuilder;
 import java.text.SimpleDateFormat;
 
 void usage() {
@@ -21,6 +23,8 @@ void installUrl(String repoUrl, File eclipseHome, String product) {
     
 	if (repoUrl.endsWith(".xml")) {
 		installFromCentral(repoUrl, eclipseHome, product);
+	} else if (repoUrl.endsWith(".zip")) {
+		installZipRepo(repoUrl, eclipseHome, product);
 	} else if (repoUrl.equals("CHECK_FOR_UPDATES")) {
 		checkForUpdates(eclipseHome, product);
 	} else {
@@ -28,6 +32,33 @@ void installUrl(String repoUrl, File eclipseHome, String product) {
 	}
 }
 
+
+void installZipRepo(String repoUrl, File eclipseHome, String productName){
+
+	String	additionalVMArgs = "";
+
+	if(new File(repoUrl).isFile()){
+		//local file, no need to download
+		additionalVMArgs = "-DZIP=" + repoUrl;
+	}else{
+        	// wget zip file
+		println("DOWNLOAD FIRST: " + repoUrl);
+		
+	        String zipName = repoUrl.substring(repoUrl.lastIndexOf("/")+1);
+	        File zip = new File("./" + zipName);
+                
+        	new AntBuilder().get(
+                	src: repoUrl,
+	                dest: zip.getAbsolutePath());
+
+		additionalVMArgs = "-DZIP=" + zip.getAbsolutePath();
+	}
+
+        // run install zip test
+        println("Installing content from " + repoUrl);
+	runSWTBotInstallRoutine(eclipseHome, productName, additionalVMArgs, "org.jboss.tools.tests.installation.InstallZipTest");
+
+}
 
 //Takes repo URL as single parameter
 void installRepo(String repoUrl, File eclipseHome, String productName) {
@@ -174,9 +205,14 @@ args[1..-1].each {
 }
 sites.each {
 	if (new File(it).isFile()) {
-		new File(it).eachLine({ line ->
-			installUrl(line, eclipseHome, productName);
-		});
+
+		if(it.endsWith(".zip")){
+			installZipRepo(it, eclipseHome, productName);
+		}else{
+			new File(it).eachLine({ line ->
+				installUrl(line, eclipseHome, productName);
+			});
+		}
 	} else {
 		installUrl(it, eclipseHome, productName);
 	}
