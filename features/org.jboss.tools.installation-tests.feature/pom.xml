@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.jboss.tools</groupId>
   		<artifactId>installation-tests</artifactId>
-  		<version>4.1.0.Alpha1-SNAPSHOT</version>
+  		<version>4.1.0.Alpha2-SNAPSHOT</version>
 		<relativePath>../..</relativePath>
 	</parent>
 	
