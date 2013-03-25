@@ -174,7 +174,7 @@ proc.setArgs("-application org.eclipse.equinox.p2.director " +
 		"-repository http://download.eclipse.org/technology/swtbot/releases/latest/," +
 		"file:///" + companionRepoLocation + " " +
 		"-installIU org.jboss.tools.tests.installation " +
-		"-installIU org.eclipse.swtbot.eclipse.test.junit4.feature.group " +
+		"-installIU org.eclipse.swtbot.eclipse.test.junit.feature.group " +
 		"-consolelog");
 proc.init();
 int returnCode = proc.executeJava();
