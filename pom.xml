@@ -13,7 +13,6 @@
 	<packaging>pom</packaging>
 	<modules>
 		<module>plugins/org.jboss.tools.tests.installation</module>
-		<module>features/org.jboss.tools.installation-tests.feature</module>
 		<module>repository</module>
 		<module>scripts</module>
 	</modules> 

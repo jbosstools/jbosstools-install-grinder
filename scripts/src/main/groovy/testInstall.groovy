@@ -92,7 +92,7 @@ void runSWTBotInstallRoutine(File eclipseHome, String productName, String additi
 			"-Dusage_reporting_enabled=false " +
 			"-Xms256M -Xmx768M -XX:MaxPermSize=512M");
 	proc.setJar(new File(eclipseHome, "plugins").listFiles().find {it.getName().startsWith("org.eclipse.equinox.launcher_") && it.getName().endsWith(".jar")} );
-	proc.setArgs("-application org.eclipse.swtbot.eclipse.junit4.headless.swtbottestapplication " +
+	proc.setArgs("-application org.eclipse.swtbot.eclipse.junit.headless.swtbottestapplication " +
 			"-testApplication org.eclipse.ui.ide.workbench " +
 			"-product " + productName + " " +
 			"-data workspace " +
