@@ -60,6 +60,14 @@ void installZipRepo(String repoUrl, File eclipseHome, String productName){
 
 }
 
+//site = comma separated list of sites to be added 
+void addSite(String site, File eclipseHome, String productName){
+
+	String additionalVMArgs = "-DADDSITE=" + site;
+	println("Add Software sites (no installation):" + site);
+	runSWTBotInstallRoutine(eclipseHome, productName, additionalVMArgs, "org.jboss.tools.tests.installation.AddSiteTest"); 
+}
+
 //Takes repo URL as single parameter
 void installRepo(String repoUrl, File eclipseHome, String productName) {
 	println("Installing content from " + repoUrl);
@@ -197,6 +205,13 @@ iniLines = iniFile.readLines();
 targetIndex = iniLines.findIndexOf {line -> line.startsWith("-product") };
 String productName = iniLines[targetIndex + 1];
 println ("Product is: " + productName);
+
+// Add software sites (no installation)
+String newSite = System.properties['ADDSITE'];
+if(newSite != null)
+	addSite(newSite, eclipseHome, productName);
+
+// End of 'Add software sites (no installatio)
 
 def sites = [];
 args[1..-1].each {
