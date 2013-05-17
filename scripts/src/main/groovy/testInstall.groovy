@@ -131,11 +131,16 @@ void runSWTBotInstallRoutine(File eclipseHome, String productName, String additi
 	}
 }
 
-// Takes a Central directory.xml URL single parameter
-void installFromCentral(String discoveryUrl, File eclipseHome, String productName) {
-	println("Installing content from " + discoveryUrl);
-        String additionalVMArgs = "-Djboss.discovery.directory.url=" + discoveryUrl;
-        
+// Takes a Central directory.xml URL single parameter, and assumes the accomanying update site is one path segment up:
+// for http://download.jboss.org/jbosstools/discovery/development/4.1.0.Alpha2/jbosstools-directory.xml
+// use http://download.jboss.org/jbosstools/discovery/development/4.1.0.Alpha2/
+// for http://download.jboss.org/jbosstools/discovery/nightly/core/trunk/jbosstools-directory.xml
+// use http://download.jboss.org/jbosstools/discovery/nightly/core/trunk/
+void installFromCentral(String discoveryDirectoryUrl, File eclipseHome, String productName) {
+	println("Installing content from " + discoveryDirectoryUrl);
+  String discoverySiteUrl=discoveryDirectoryUrl.substring(0,discoveryDirectoryUrl.lastIndexOf("/")+1)
+  String additionalVMArgs = " -Djboss.discovery.directory.url=" + discoveryDirectoryUrl + " -Djboss.discovery.site.url=" + discoverySiteUrl;
+
 	runSWTBotInstallRoutine(eclipseHome, productName, additionalVMArgs, "org.jboss.tools.tests.installation.InstallFromCentralTest");
 }
 
