@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Red Hat, Inc.
+ * Copyright (c) 2012-2013 Red Hat, Inc.
  * Distributed under license by Red Hat, Inc. All rights reserved.
  * This program is made available under the terms of the
  * Eclipse Public License v1.0 which accompanies this distribution,
@@ -21,6 +21,7 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotCheckBox;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -31,6 +32,17 @@ import org.junit.runner.RunWith;
  */
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class InstallFromCentralTest extends SWTBotEclipseTestCase {
+
+
+	private static int installationTimeout = 60 * 60000;
+
+	@BeforeClass
+	public static void setUpBeforeClass() {
+		String timeoutPropertyValue = System.getProperty(InstallTest.INSTALLATION_TIMEOUT_IN_MINUTES_PROPERTY);
+		if (timeoutPropertyValue != null) {
+			installationTimeout = Integer.parseInt(timeoutPropertyValue) * 60000;
+		}
+	}
 
 	@Before
 	@Override
@@ -77,7 +89,7 @@ public class InstallFromCentralTest extends SWTBotEclipseTestCase {
 			public String getFailureMessage() {
 				return "Blocking while calculating deps";
 			}
-		}, 15 * 60000); // 15 minutes timeout
+		}, installationTimeout); // 15 minutes timeout
 		if (this.bot.activeShell().getText().equals("Problem Occured")) {
 			String reason = this.bot.text().getText();
 			Assert.fail("Could not install Central content from " + System.getProperty("org.jboss.tools.central.discovery") + "\n" + reason);

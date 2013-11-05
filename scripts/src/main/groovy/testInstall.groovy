@@ -4,23 +4,25 @@ import groovy.util.AntBuilder;
 import java.text.SimpleDateFormat;
 
 void usage() {
-        println "-------------------------------------------------------------";
-	println "Script to test installation";
-	println "usage: groovy.sh testInstall.groovy <eclipse_home> <file_containing_list_of_sites|repository_url|CHECK_FOR_UPDATES>(;)*";
-	println "   <eclipse_home>: an eclipse installation will be performed on";
-	println "   <file_containing_list_of_sites> a file containing a list of p2-friendly URLs of repositories";
-	println "                                   separated by spaces or line breaks";
-	println "   <repository_url>: URL of a p2 repo to install from";
-	println "   CHECK_FOR_UPDATES: will trigger the check for updates";
-        println "--------------------------------------------------------------";
-        println "usage for installing selected units: groovy.sh -DIUs=\"comma separated list of features\" testInstall.groovy <eclipse_home> <repository_url>";
-        println "--------------------------------------------------------------";
+    println """
+-------------------------------------------------------------
+Script to test installation
+usage: groovy.sh testInstall.groovy <eclipse_home> <file_containing_list_of_sites|repository_url|CHECK_FOR_UPDATES>(;)*
+  <eclipse_home>: an eclipse installation will be performed on
+  <file_containing_list_of_sites> a file containing a list of p2-friendly URLs of repositories
+                                  separated by spaces or line breaks
+  <repository_url>: URL of a p2 repo to install from
+  CHECK_FOR_UPDATES: will trigger the check for updates
+--------------------------------------------------------------
+usage for installing selected units: groovy.sh -DIUs=iu1,iu2,... testInstall.groovy <eclipse_home> <repository_url>
+--------------------------------------------------------------
+	"""
 }
 
 
 // Takes a repo or a directory.xml URL single parameter
 void installUrl(String repoUrl, File eclipseHome, String product) {
-    
+
 	if (repoUrl.endsWith(".xml")) {
 		installFromCentral(repoUrl, eclipseHome, product);
 	} else if (repoUrl.endsWith(".zip")) {
@@ -35,80 +37,87 @@ void installUrl(String repoUrl, File eclipseHome, String product) {
 
 void installZipRepo(String repoUrl, File eclipseHome, String productName){
 
-	String	additionalVMArgs = "";
+	Collection<String> additionalVMArgs = [];
 
 	if(new File(repoUrl).isFile()){
 		//local file, no need to download
-		additionalVMArgs = "-DZIP=" + repoUrl;
+		additionalVMArgs += "-DZIP=" + repoUrl;
 	}else{
-        	// wget zip file
+        // wget zip file
 		println("DOWNLOAD FIRST: " + repoUrl);
-		
-	        String zipName = repoUrl.substring(repoUrl.lastIndexOf("/")+1);
-	        File zip = new File("./" + zipName);
-                
-        	new AntBuilder().get(
-                	src: repoUrl,
-	                dest: zip.getAbsolutePath());
 
-		additionalVMArgs = "-DZIP=" + zip.getAbsolutePath();
+	    String zipName = repoUrl.substring(repoUrl.lastIndexOf("/")+1);
+	    File zip = new File("./" + zipName);
+       	new AntBuilder().get(
+           	src: repoUrl,
+            dest: zip.getAbsolutePath());
+
+		additionalVMArgs += "-DZIP=" + zip.getAbsolutePath();
 	}
 
-        // run install zip test
-        println("Installing content from " + repoUrl);
+    // run install zip test
+    println("Installing content from " + repoUrl);
 	runSWTBotInstallRoutine(eclipseHome, productName, additionalVMArgs, "org.jboss.tools.tests.installation.InstallZipTest");
 
 }
 
-//site = comma separated list of sites to be added 
+//site = comma separated list of sites to be added
 void addSite(String site, File eclipseHome, String productName){
-
-	String additionalVMArgs = "-DADDSITE=" + site;
+	Collection<String> additionalVMArgs = [];
+	additionalVMArgs += "-DADDSITE=" + site;
 	println("Add Software sites (no installation):" + site);
-	runSWTBotInstallRoutine(eclipseHome, productName, additionalVMArgs, "org.jboss.tools.tests.installation.AddSiteTest"); 
+	runSWTBotInstallRoutine(eclipseHome, productName, additionalVMArgs, "org.jboss.tools.tests.installation.AddSiteTest");
 }
 
 //Takes repo URL as single parameter
 void installRepo(String repoUrl, File eclipseHome, String productName) {
 	println("Installing content from " + repoUrl);
-	String additionalVMArgs = "-DUPDATE_SITE=" + repoUrl;
-    
-        String ius = System.properties['IUs'];
-        if(ius != null){
-            ius=ius.replaceAll("\"","");
-            println("Units to install:" + ius);
-            additionalVMArgs += " -DIUs=\"" + ius + "\"";
-        }
+	Collection<String> additionalVMArgs = [];
+	additionalVMArgs += "-DUPDATE_SITE=" + repoUrl;
+    String ius = System.properties['IUs'];
+    if(ius != null){
+        ius=ius.replaceAll("\"","");
+        println("Units to install:" + ius);
+        additionalVMArgs += " -DIUs=\"" + ius + "\"";
+    }
 	runSWTBotInstallRoutine(eclipseHome, productName, additionalVMArgs, "org.jboss.tools.tests.installation.InstallTest");
 }
 
-void runSWTBotInstallRoutine(File eclipseHome, String productName, String additionalVMArgs, String testClassName) {
+void runSWTBotInstallRoutine(File eclipseHome, String productName, Collection<String> additionalVMArgs, String testClassName) {
 	String report = "TEST-install-" + new SimpleDateFormat("yyyyMMddh-hmm").format(new Date()) + ".xml";
-	
-	String specificVMArgs="";
-	String osName = System.properties['os.name'].toLowerCase();
-	if(osName.contains("mac")){
-		specificVMArgs="-XstartOnFirstThread";
-	}
+
 	// Invoke tests
 	Java proc = new org.apache.tools.ant.taskdefs.Java();
 	proc.setFork(true);
 	proc.setDir(eclipseHome);
-	proc.setJvmargs(additionalVMArgs + " " +
-			specificVMArgs   + " " +
-			"-Dorg.eclipse.swtbot.search.timeout=300000 " +
-			"-Dusage_reporting_enabled=false " +
-			"-Xms256M -Xmx768M -XX:MaxPermSize=512M");
+
+	Collection<String> vmArgs = [];
+	vmArgs.addAll(additionalVMArgs);
+	String osName = System.properties['os.name'].toLowerCase();
+	if(osName.contains("mac")){
+		vmArgs += "-XstartOnFirstThread";
+	}
+	vmArgs += "-Dorg.eclipse.swtbot.search.timeout=300000";
+	vmArgs += "-Dusage_reporting_enabled=false";
+	if (System.getProperty("INSTALLATION_TIMEOUT_IN_MINUTES") != null) {
+		vmArgs += "-DINSTALLATION_TIMEOUT_IN_MINUTES=" + System.getProperty("INSTALLATION_TIMEOUT_IN_MINUTES");
+	}
+	vmArgs += "-Xms256M"; vmArgs += "-Xmx768M"; vmArgs += "-XX:MaxPermSize=512M";
+	proc.setJvmargs(vmArgs.join(" "));
+
 	proc.setJar(new File(eclipseHome, "plugins").listFiles().find {it.getName().startsWith("org.eclipse.equinox.launcher_") && it.getName().endsWith(".jar")} );
-	proc.setArgs("-application org.eclipse.swtbot.eclipse.junit.headless.swtbottestapplication " +
-			"-testApplication org.eclipse.ui.ide.workbench " +
-			"-product " + productName + " " +
-			"-data workspace " +
-			"formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter," + report + " " +
-			"formatter=org.apache.tools.ant.taskdefs.optional.junit.PlainJUnitResultFormatter " +
-			"-testPluginName org.jboss.tools.tests.installation " +
-			"-className " + testClassName + " " +
-			"-consoleLog -debug");
+	Collection<String> args = [];
+	args += "-application"; args += "org.eclipse.swtbot.eclipse.junit.headless.swtbottestapplication";
+	args += "-testApplication"; args += "org.eclipse.ui.ide.workbench";
+	args += "-product"; args += productName;
+	args += "-data"; args += "workspace";
+	args += "formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter," + report;
+	args += "formatter=org.apache.tools.ant.taskdefs.optional.junit.PlainJUnitResultFormatter";
+	args += "-testPluginName"; args += "org.jboss.tools.tests.installation";
+	args += "-className"; args += testClassName;
+	args += "-consoleLog";
+	args += "-debug";
+	proc.setArgs(args.join(" "));
 	proc.init();
 	int returnCode = proc.executeJava();
 	if (returnCode != 0) {
@@ -139,7 +148,9 @@ void runSWTBotInstallRoutine(File eclipseHome, String productName, String additi
 void installFromCentral(String discoveryDirectoryUrl, File eclipseHome, String productName) {
 	println("Installing content from " + discoveryDirectoryUrl);
   String discoverySiteUrl=discoveryDirectoryUrl.substring(0,discoveryDirectoryUrl.lastIndexOf("/")+1);
-  String additionalVMArgs = " -Djboss.discovery.directory.url=" + discoveryDirectoryUrl + " -Djboss.discovery.site.url=" + discoverySiteUrl;
+  Collection<String >additionalVMArgs = [];
+  additionalVMArgs.add("-Djboss.discovery.directory.url=" + discoveryDirectoryUrl);
+  additionalVMArgs.add("-Djboss.discovery.site.url=" + discoverySiteUrl);
 
 	runSWTBotInstallRoutine(eclipseHome, productName, additionalVMArgs, "org.jboss.tools.tests.installation.InstallFromCentralTest");
 }
@@ -149,6 +160,9 @@ void checkForUpdates(File eclipseHome, String productName) {
 	println("Check for updates");
 	runSWTBotInstallRoutine(eclipseHome, productName, "", "org.jboss.tools.tests.installation.CheckForUpdatesTest");
 }
+
+
+//// Launcher script
 
 if (args.length < 2) {
 	usage();

@@ -1,20 +1,16 @@
-/******************************************************************************* 
- * Copyright (c) 2012 Red Hat, Inc. 
- * Distributed under license by Red Hat, Inc. All rights reserved. 
- * This program is made available under the terms of the 
- * Eclipse Public License v1.0 which accompanies this distribution, 
- * and is available at http://www.eclipse.org/legal/epl-v10.html 
- * 
- * Contributors: 
- *     Red Hat, Inc. - initial API and implementation 
+/*******************************************************************************
+ * Copyright (c) 2012-2013 Red Hat, Inc.
+ * Distributed under license by Red Hat, Inc. All rights reserved.
+ * This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution,
+ * and is available at http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Red Hat, Inc. - initial API and implementation
  ******************************************************************************/
 
 package org.jboss.tools.tests.installation;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import junit.framework.Assert;
 
 import org.eclipse.swtbot.eclipse.finder.SWTBotEclipseTestCase;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
@@ -22,44 +18,55 @@ import org.eclipse.swtbot.swt.finder.SWTBot;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.waits.ICondition;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotButton;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
-import org.eclipse.swtbot.swt.finder.widgets.TimeoutException;
+import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * This is a bot scenario which performs install through p2 UI.
  * It takes as input a p2 repository URL configured in the UPDATE_SITE
- * system property. By default all features will be installed. 
- * If IUs system property is specified - only selected IUs 
+ * system property. By default all features will be installed.
+ * If IUs system property is specified - only selected IUs
  * will be installed. IUs system property is a comma separeted string
  * of IU names. For example: "Abridged JBoss Tools 4.0,Hibernate Tools"
- * 
+ *
  * @author Mickael Istria
  * @author Pavol Srna
  */
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class InstallTest extends SWTBotEclipseTestCase {
-	
+
 	/**
 	 * System property expected to receive URL of a p2 repo to install
 	 * It the input of the scenario.
 	 */
 	public static final String UPDATE_SITE_PROPERTY = "UPDATE_SITE";
-	
+	public static final String INSTALLATION_TIMEOUT_IN_MINUTES_PROPERTY = "INSTALLATION_TIMEOUT_IN_MINUTES";
+
+	private static int installationTimeout = 60 * 60000;
+
+	@BeforeClass
+	public static void setUpBeforeClass() {
+		String timeoutPropertyValue = System.getProperty(InstallTest.INSTALLATION_TIMEOUT_IN_MINUTES_PROPERTY);
+		if (timeoutPropertyValue != null) {
+			installationTimeout = Integer.parseInt(timeoutPropertyValue) * 60000;
+		}
+	}
+
 	@Test
 	public void testInstall() throws Exception {
 		String site = System.getProperty("UPDATE_SITE");
 		Assert.assertNotNull("No site specified, set UPDATE_SITE system property first", site);
-		
+
 		String IUs = System.getProperty("IUs");//optional property to install only selected IUs
-		
+
 		installFromSite(site, IUs);
 	}
 
-	
+
 	private void installFromSite(String site, String selectedIUs) {
 		this.bot.menu("Help").menu("Install New Software...").click();
 		this.bot.shell("Install").bot().button("Add...").click();
@@ -68,48 +75,48 @@ public class InstallTest extends SWTBotEclipseTestCase {
 		this.bot.button("OK").click();
 		this.bot.shell("Install").activate().setFocus();
 		this.bot.waitWhile(new ICondition() {
-			
+
 			@Override
 			public boolean test() throws Exception {
 				return bot.tree().getAllItems()[0].getText().startsWith("Pending...");
 			}
-			
+
 			@Override
 			public void init(SWTBot bot) {
 			}
-			
+
 			@Override
 			public String getFailureMessage() {
 				return "Could not see categories in tree";
 			}
 		});
-		
+
 		if(selectedIUs != null){
 			//select IUs to install
 			for(String iu : selectedIUs.split(",")){
-				assertFalse("Unit: \"" + iu + "\" NOT FOUND!", !checkIU(iu));	
+				assertFalse("Unit: \"" + iu + "\" NOT FOUND!", !checkIU(iu));
 			}
-			
+
 		} else {
-			this.bot.button("Select All").click();			
+			this.bot.button("Select All").click();
 		}
-		
+
 		this.bot.button("Next >").click();
 		this.bot.waitUntil(new ICondition() {
 			@Override
 			public boolean test() throws Exception {
 				return bot.button("Cancel").isEnabled();
 			}
-			
+
 			@Override
 			public void init(SWTBot bot) {
 			}
-			
+
 			@Override
 			public String getFailureMessage() {
 				return "Blocking while calculating deps";
 			}
-		}, 10 * 60000); // 10 minutes timeout
+		}, installationTimeout);
 		try {
 			continueInstall(bot);
 		} catch (InstallFailureException ex) {
@@ -117,10 +124,10 @@ public class InstallTest extends SWTBotEclipseTestCase {
 			message.append("Could not install from: " + site);
 			message.append("\n");
 			message.append(ex.getMessage());
-			
+
 			fail(message.toString());
 		}
-		
+
 	}
 
 
@@ -137,21 +144,21 @@ public class InstallTest extends SWTBotEclipseTestCase {
 			// wait for Security pop-up, or install finished.
 			final SWTBotShell shell = bot.shell(shellTitle);
 			bot.waitWhile(new ICondition() {
-				
+
 				@Override
 				public boolean test() throws Exception {
 					return shell.isActive();
 				}
-				
+
 				@Override
 				public void init(SWTBot bot) {
 				}
-				
+
 				@Override
 				public String getFailureMessage() {
 					return null;
 				}
-			}, 60 * 60000); // 60 minutes_tino
+			}, installationTimeout);
 			if (bot.activeShell().getText().equals("Security Warning")) {
 				bot.button("OK").click();
 				System.err.println("OK clicked");
@@ -168,16 +175,16 @@ public class InstallTest extends SWTBotEclipseTestCase {
 							return true;
 						}
 					}
-				
+
 					@Override
 					public void init(SWTBot bot) {
 					}
-				
+
 					@Override
 					public String getFailureMessage() {
 						return null;
 					}
-				}, 15 * 60000); // 15 more minutes
+				}, installationTimeout); // 15 more minutes
 			}
 			SWTBot restartShellBot = bot.shell("Software Updates").bot();
 			try {
@@ -188,7 +195,7 @@ public class InstallTest extends SWTBotEclipseTestCase {
 				restartShellBot.button("No").click();
 			}
 		} catch (Exception ex) {
-			
+
 			String installDesc = bot.text().getText();
 			if (installDesc == null || installDesc.isEmpty()) {
 				throw new RuntimeException("Internal error", ex);
@@ -200,9 +207,9 @@ public class InstallTest extends SWTBotEclipseTestCase {
 
 	/**
 	 * Checks IU (Category, or Feature) in a tree
-	 * @param iu to be checked 
+	 * @param iu to be checked
 	 * @return true if checked
-	 * 
+	 *
 	 * @author Pavol Srna
 	 */
 	private boolean checkIU(String iu){
