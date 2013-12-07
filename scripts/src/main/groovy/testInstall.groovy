@@ -197,8 +197,19 @@ Java proc = new org.apache.tools.ant.taskdefs.Java();
 proc.setDir(eclipseHome);
 proc.setFork(true);
 proc.setJar(new File(eclipseHome, "plugins").listFiles().find({it.getName().startsWith("org.eclipse.equinox.launcher_") && it.getName().endsWith(".jar")}).getAbsoluteFile());
+// parameterize the URL from which SWTBot is installed, eg., with 
+// -DSWTBOT_UPDATE_SITE=http://download.jboss.org/jbosstools/updates/requirements/swtbot/2.1.1.201307101628/
+String SWTBOT_UPDATE_SITE = System.properties['SWTBOT_UPDATE_SITE'];
+if(SWTBOT_UPDATE_SITE != null){
+		SWTBOT_UPDATE_SITE=SWTBOT_UPDATE_SITE.replaceAll("\"","");
+}
+else
+{
+		SWTBOT_UPDATE_SITE="http://download.eclipse.org/technology/swtbot/releases/latest/";
+}
+println("Install SWTBot from:" + SWTBOT_UPDATE_SITE);
 proc.setArgs("-application org.eclipse.equinox.p2.director " +
-		"-repository http://download.eclipse.org/technology/swtbot/releases/latest/," +
+		"-repository " + SWTBOT_UPDATE_SITE + "," +
 		"file:///" + companionRepoLocation + " " +
 		"-installIU org.jboss.tools.tests.installation " +
 		"-installIU org.eclipse.swtbot.eclipse.test.junit.feature.group " +
