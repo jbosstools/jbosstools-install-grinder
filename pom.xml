@@ -4,13 +4,18 @@
 	<parent>
 		<groupId>org.jboss.tools</groupId>
 		<artifactId>parent</artifactId>
-		<version>4.1.0.Final-SNAPSHOT</version>
+		<version>4.2.0.Alpha2-SNAPSHOT</version>
 		<relativePath>../build/parent/pom.xml</relativePath>
 	</parent>
 	<groupId>org.jboss.tools</groupId>
 	<artifactId>installation-tests</artifactId>
 	<name>Installation Tests</name>
 	<packaging>pom</packaging>
+
+	<properties>
+		<tycho.scmUrl>scm:git:https://github.com/jbosstools/jbosstools-install-grinder.git</tycho.scmUrl>
+	</properties>
+
 	<modules>
 		<module>plugins/org.jboss.tools.tests.installation</module>
 		<module>repository</module>

@@ -4,12 +4,12 @@
 	<parent>
 		<groupId>org.jboss.tools</groupId>
   		<artifactId>installation-tests</artifactId>
-  		<version>4.1.0.Final-SNAPSHOT</version>
+  		<version>4.2.0.Alpha2-SNAPSHOT</version>
 		<relativePath>../..</relativePath>
 	</parent>
 
 	<groupId>org.jboss.tools.installation-tests.plugins</groupId>
 	<artifactId>org.jboss.tools.tests.installation</artifactId>
 	<packaging>eclipse-plugin</packaging>
-	<version>4.1.0-SNAPSHOT</version>
+	<version>4.2.0-SNAPSHOT</version>
 </project>
