@@ -16,6 +16,14 @@ usage: groovy.sh testInstall.groovy <eclipse_home> <file_containing_list_of_site
 --------------------------------------------------------------
 usage for installing selected units: groovy.sh -DIUs=iu1,iu2,... testInstall.groovy <eclipse_home> <repository_url>
 --------------------------------------------------------------
+Commandline flags:
+	-DIUs=iu1,iu2,...
+	-DADDSITE=http://updatesite1/,http://updatesite2/,http://updatesite3/,...
+	-DINSTALLATION_TIMEOUT_IN_MINUTES=30
+	-DSWTBOT_UPDATE_SITE=http://download.jboss.org/jbosstools/updates/requirements/swtbot/2.1.1.201307101628/
+	-DJVM=/qa/tools/opt/jdk1.7.0_last/bin/java
+--------------------------------------------------------------
+
 	"""
 }
 
@@ -194,11 +202,23 @@ if (companionRepoLocation == null) {
 }
 // Install test framework
 Java proc = new org.apache.tools.ant.taskdefs.Java();
+
+// JBIDE-16304: support option to pass in alternate JVM path, eg., /qa/tools/opt/jdk1.7.0_last/bin/java or /qa/tools/opt/jdk1.6.0_last/bin/java
+// If not set fall back to default, which is proc.setJvm("java") so whatever's on the current PATH will be used (probably JDK 6)
+// In Jenkins job config, set in Groovy script file > Advanced... > Properties > 
+//    JVM=/qa/tools/opt/jdk1.7.0_last/bin/java
+String JVM = System.properties['JVM'];
+if(JVM != null){
+		JVM=JVM.replaceAll("\"","");
+		proc.setJvm(JVM);
+}
+
 proc.setDir(eclipseHome);
 proc.setFork(true);
 proc.setJar(new File(eclipseHome, "plugins").listFiles().find({it.getName().startsWith("org.eclipse.equinox.launcher_") && it.getName().endsWith(".jar")}).getAbsoluteFile());
-// parameterize the URL from which SWTBot is installed, eg., with 
-// -DSWTBOT_UPDATE_SITE=http://download.jboss.org/jbosstools/updates/requirements/swtbot/2.1.1.201307101628/
+// JBIDE-16269: parameterize the URL from which SWTBot is installed, eg., with 
+// In Jenkins job config, set in Groovy script file > Advanced... > Properties > 
+//    SWTBOT_UPDATE_SITE=http://download.jboss.org/jbosstools/updates/requirements/swtbot/2.1.1.201307101628/
 String SWTBOT_UPDATE_SITE = System.properties['SWTBOT_UPDATE_SITE'];
 if(SWTBOT_UPDATE_SITE != null){
 		SWTBOT_UPDATE_SITE=SWTBOT_UPDATE_SITE.replaceAll("\"","");
