@@ -12,6 +12,7 @@ package org.jboss.tools.tests.installation;
 
 import org.eclipse.swtbot.eclipse.finder.SWTBotEclipseTestCase;
 import org.eclipse.swtbot.swt.finder.SWTBot;
+import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.waits.ICondition;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -36,8 +37,10 @@ public class CheckForUpdatesTest extends SWTBotEclipseTestCase {
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();
-		if (this.bot.activeView().getTitle().equals("Welcome")) {
+		try{
 			this.bot.viewByTitle("Welcome").close();
+		} catch (WidgetNotFoundException e){
+			//no welcome screen open
 		}
 	}
 
