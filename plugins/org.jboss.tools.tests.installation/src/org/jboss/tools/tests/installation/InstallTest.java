@@ -187,12 +187,13 @@ public class InstallTest extends SWTBotEclipseTestCase {
 				}, installationTimeout); // 15 more minutes
 			}
 			SWTBot restartShellBot = bot.shell("Software Updates").bot();
+			// Don't restart in test, test executor will do it.
 			try {
-				// Eclipse 3.7.x => "Not now"
-				restartShellBot.button("Not Now").click(); // Don't restart in test, test executor will do it.
-			} catch (WidgetNotFoundException ex) {
 				// Eclipse 4.2 => "No"
 				restartShellBot.button("No").click();
+			} catch (WidgetNotFoundException ex) {
+				// Eclipse 3.7.x => "Not now"
+				restartShellBot.button("Not Now").click();
 			}
 		} catch (Exception ex) {
 
