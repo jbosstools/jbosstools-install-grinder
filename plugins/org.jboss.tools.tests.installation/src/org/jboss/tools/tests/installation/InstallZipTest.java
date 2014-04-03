@@ -53,8 +53,10 @@ public class InstallZipTest extends SWTBotEclipseTestCase {
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();
-		if (this.bot.activeView().getTitle().equals("Welcome")) {
+		try{
 			this.bot.viewByTitle("Welcome").close();
+		} catch (WidgetNotFoundException e){
+			//no welcome screen open
 		}
 	}
 
