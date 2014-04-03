@@ -111,6 +111,12 @@ void runSWTBotInstallRoutine(File eclipseHome, String productName, Collection<St
 		vmArgs += "-DINSTALLATION_TIMEOUT_IN_MINUTES=" + System.getProperty("INSTALLATION_TIMEOUT_IN_MINUTES");
 	}
 	vmArgs += "-Xms256M"; vmArgs += "-Xmx768M"; vmArgs += "-XX:MaxPermSize=512M";
+
+	String debugPort = System.getProperty("debugPort");
+	if (debugPort != null) {
+	   vmArgs += "-agentlib:jdwp=transport=dt_socket,address=localhost:" + debugPort + ",server=y,suspend=y";
+	}
+
 	proc.setJvmargs(vmArgs.join(" "));
 
 	proc.setJar(new File(eclipseHome, "plugins").listFiles().find {it.getName().startsWith("org.eclipse.equinox.launcher_") && it.getName().endsWith(".jar")} );
