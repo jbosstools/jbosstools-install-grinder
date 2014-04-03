@@ -20,6 +20,7 @@ import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.waits.ICondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,13 +39,22 @@ public class InstallZipTest extends SWTBotEclipseTestCase {
 	 */
 	public static final String ZIP_PROPERTY = "UPDATE_SITE_ZIP";
 
-	private static int installationTimeout;
+	private static int installationTimeout = 60 * 60000;
 
 	@BeforeClass
 	public static void setUpBeforeClass() {
 		String timeoutPropertyValue = System.getProperty(InstallTest.INSTALLATION_TIMEOUT_IN_MINUTES_PROPERTY);
 		if (timeoutPropertyValue != null) {
 			installationTimeout = Integer.parseInt(timeoutPropertyValue) * 60000;
+		}
+	}
+
+	@Before
+	@Override
+	public void setUp() throws Exception {
+		super.setUp();
+		if (this.bot.activeView().getTitle().equals("Welcome")) {
+			this.bot.viewByTitle("Welcome").close();
 		}
 	}
 
@@ -55,7 +65,6 @@ public class InstallZipTest extends SWTBotEclipseTestCase {
 
 		installFromZip(zip);
 	}
-
 
 	private void installFromZip(String zip) {
 		this.bot.menu("Help").menu("Install New Software...").click();

@@ -13,6 +13,7 @@ package org.jboss.tools.tests.installation;
 import org.eclipse.swtbot.eclipse.finder.SWTBotEclipseTestCase;
 import org.eclipse.swtbot.swt.finder.SWTBot;
 import org.eclipse.swtbot.swt.finder.waits.ICondition;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -28,6 +29,15 @@ public class CheckForUpdatesTest extends SWTBotEclipseTestCase {
 		String timeoutPropertyValue = System.getProperty(InstallTest.INSTALLATION_TIMEOUT_IN_MINUTES_PROPERTY);
 		if (timeoutPropertyValue != null) {
 			installationTimeout = Integer.parseInt(timeoutPropertyValue) * 60000;
+		}
+	}
+
+	@Before
+	@Override
+	public void setUp() throws Exception {
+		super.setUp();
+		if (this.bot.activeView().getTitle().equals("Welcome")) {
+			this.bot.viewByTitle("Welcome").close();
 		}
 	}
 
