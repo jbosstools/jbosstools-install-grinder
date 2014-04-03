@@ -20,6 +20,7 @@ import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.waits.ICondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,6 +49,15 @@ public class InstallZipTest extends SWTBotEclipseTestCase {
 		}
 	}
 
+	@Before
+	@Override
+	public void setUp() throws Exception {
+		super.setUp();
+		if (this.bot.activeView().getTitle().equals("Welcome")) {
+			this.bot.viewByTitle("Welcome").close();
+		}
+	}
+
 	@Test
 	public void testInstall() throws Exception {
 		String zip = System.getProperty("ZIP");
@@ -55,7 +65,6 @@ public class InstallZipTest extends SWTBotEclipseTestCase {
 
 		installFromZip(zip);
 	}
-
 
 	private void installFromZip(String zip) {
 		this.bot.menu("Help").menu("Install New Software...").click();
