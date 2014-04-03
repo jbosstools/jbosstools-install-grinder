@@ -39,7 +39,7 @@ public class InstallZipTest extends SWTBotEclipseTestCase {
 	 */
 	public static final String ZIP_PROPERTY = "UPDATE_SITE_ZIP";
 
-	private static int installationTimeout;
+	private static int installationTimeout = 60 * 60000;
 
 	@BeforeClass
 	public static void setUpBeforeClass() {
