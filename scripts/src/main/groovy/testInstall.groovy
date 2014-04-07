@@ -28,17 +28,32 @@ Commandline flags:
 }
 
 
-// Takes a repo or a directory.xml URL single parameter
-void installUrl(String repoUrl, File eclipseHome, String product) {
-
-	if (repoUrl.endsWith(".xml")) {
-		installFromCentral(repoUrl, eclipseHome, product);
-	} else if (repoUrl.endsWith(".zip")) {
-		installZipRepo(repoUrl, eclipseHome, product);
-	} else if (repoUrl.equals("CHECK_FOR_UPDATES")) {
+/* Takes a repo or a directory.xml URL single parameter
+ * @param scenario defines what to install.
+ * For Central, scenario can be of form
+ * <directory.xml-url>=-<connectorToExclude>,-<connectorToExclue>
+ * The = sign and parts after it are optional paremters:
+ *  -<connectorToExclude> excludes a connector from installation, based on its id
+ */
+void runInstallTest(String scenario, File eclipseHome, String product) {
+	String[] details = scenario.split("=")
+	String url = details[0];
+	if (url.endsWith(".xml")) {
+		def connectorsToExclude= []
+		if (details.length > 1) {
+			details[1].split(",").each { param ->
+				if (param.charAt(0) == '-') {
+					connectorsToExclude.add(param.substring(1))
+				}
+			}
+		}
+		installFromCentral(url, eclipseHome, product, connectorsToExclude);
+	} else if (url.endsWith(".zip")) {
+		installZipRepo(url, eclipseHome, product);
+	} else if (scenario.equals("CHECK_FOR_UPDATES")) {
 		checkForUpdates(eclipseHome, product);
 	} else {
-		installRepo(repoUrl, eclipseHome, product);
+		installRepo(url, eclipseHome, product);
 	}
 }
 
@@ -159,12 +174,13 @@ void runSWTBotInstallRoutine(File eclipseHome, String productName, Collection<St
 // use http://download.jboss.org/jbosstools/discovery/development/4.1.0.Alpha2/
 // for http://download.jboss.org/jbosstools/discovery/nightly/core/trunk/jbosstools-directory.xml
 // use http://download.jboss.org/jbosstools/discovery/nightly/core/trunk/
-void installFromCentral(String discoveryDirectoryUrl, File eclipseHome, String productName) {
+void installFromCentral(String discoveryDirectoryUrl, File eclipseHome, String productName, Collection<String> connectorsToExclude) {
 	println("Installing content from " + discoveryDirectoryUrl);
   String discoverySiteUrl=discoveryDirectoryUrl.substring(0,discoveryDirectoryUrl.lastIndexOf("/")+1);
   Collection<String >additionalVMArgs = [];
   additionalVMArgs.add("-Djboss.discovery.directory.url=" + discoveryDirectoryUrl);
   additionalVMArgs.add("-Djboss.discovery.site.url=" + discoverySiteUrl);
+  additionalVMArgs.add("-Dorg.jboss.tools.tests.installFromCentral.excludeConnectors=" + connectorsToExclude.join(","))
 
 	runSWTBotInstallRoutine(eclipseHome, productName, additionalVMArgs, "org.jboss.tools.tests.installation.InstallFromCentralTest");
 }
@@ -281,11 +297,11 @@ sites.each {
 			installZipRepo(it, eclipseHome, productName);
 		}else{
 			new File(it).eachLine({ line ->
-				installUrl(line, eclipseHome, productName);
+				runInstallTest(line, eclipseHome, productName);
 			});
 		}
 	} else {
-		installUrl(it, eclipseHome, productName);
+		runInstallTest(it, eclipseHome, productName);
 	}
 }
 System.exit(0)

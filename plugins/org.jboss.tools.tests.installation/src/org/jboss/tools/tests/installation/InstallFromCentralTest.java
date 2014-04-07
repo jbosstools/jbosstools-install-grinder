@@ -11,6 +11,12 @@
 
 package org.jboss.tools.tests.installation;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Widget;
 import org.eclipse.swtbot.eclipse.finder.SWTBotEclipseTestCase;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotMultiPageEditor;
 import org.eclipse.swtbot.swt.finder.SWTBot;
@@ -34,8 +40,40 @@ import org.junit.runner.RunWith;
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class InstallFromCentralTest extends SWTBotEclipseTestCase {
 
-
+	private static final String EXCLUDED_CONNECTORS_PROPERTY = "org.jboss.tools.tests.installFromCentral.excludeConnectors";
+	private static final String EXCLUDED_CONNECTORS_SEPARATOR = ",";
 	private static int installationTimeout = 60 * 60000;
+	
+	/**
+	 * This class MUST run in UI Thread and can be used to retrieve data
+	 * @author mistria
+	 *
+	 */
+	class DataRetriever implements Runnable {
+		private Widget widget;
+		private String dataKey;
+		private Object data;
+		
+		public DataRetriever(Widget widget, String dataKey) {
+			this.widget = widget;
+			this.dataKey = dataKey;
+		}
+		
+		@Override
+		public void run() {
+			if (this.dataKey == null) {
+				this.data = widget.getData();
+			} else {
+				this.data = widget.getData(this.dataKey);
+			}
+		}
+		
+		public Object getResult() {
+			return this.data;
+		}
+	}
+	
+	private Set<String> excludedConnectors;
 
 	@BeforeClass
 	public static void setUpBeforeClass() {
@@ -49,6 +87,11 @@ public class InstallFromCentralTest extends SWTBotEclipseTestCase {
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();
+		this.excludedConnectors = new HashSet<String>();
+		String propertyValue = System.getProperty(EXCLUDED_CONNECTORS_PROPERTY);
+		if (propertyValue != null) {
+			this.excludedConnectors.addAll(Arrays.asList(propertyValue.split(EXCLUDED_CONNECTORS_SEPARATOR)));
+		}
 		try{
 			this.bot.viewByTitle("Welcome").close();
 		} catch (WidgetNotFoundException e){
@@ -79,7 +122,11 @@ public class InstallFromCentralTest extends SWTBotEclipseTestCase {
 			SWTBotCheckBox check = null;
 			while ((check = this.bot.checkBox(i)) != null) {
 				if (check.getText() == null || !check.getText().contains("Show Installed")) {
-					check.click();
+					DataRetriever dataRetriever = new DataRetriever(check.widget, "connectorId");
+					Display.getDefault().syncExec(dataRetriever);
+					if (dataRetriever.getResult() != null && !this.excludedConnectors.contains(dataRetriever.getResult())) {
+						check.click();
+					}
 				}
 				i++;
 			}
