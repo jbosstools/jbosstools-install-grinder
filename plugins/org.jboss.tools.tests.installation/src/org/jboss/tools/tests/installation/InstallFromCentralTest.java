@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Widget;
 import org.eclipse.swtbot.eclipse.finder.SWTBotEclipseTestCase;
@@ -22,10 +23,13 @@ import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotMultiPageEditor;
 import org.eclipse.swtbot.swt.finder.SWTBot;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
+import org.eclipse.swtbot.swt.finder.matchers.AbstractMatcher;
 import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
 import org.eclipse.swtbot.swt.finder.waits.ICondition;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotButton;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotCheckBox;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
+import org.hamcrest.Description;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -135,7 +139,22 @@ public class InstallFromCentralTest extends SWTBotEclipseTestCase {
 		} catch (IndexOutOfBoundsException ex ) {
 			// last checkbox
 		}
-		bot.button("Install").click();
+		SWTBotButton button = new SWTBotButton(bot.widget(new AbstractMatcher<Button>() {
+			@Override
+			public void describeTo(Description description) {
+				description.appendText("starting with 'Install'");
+			}
+
+			@Override
+			protected boolean doMatch(Object item) {
+				if (! (item instanceof Button)) {
+					return false;
+				}
+				Button button = (Button)item;
+				return button.getText() != null && button.getText().startsWith("Install");
+			}
+		}));
+		button.click();
 		this.bot.waitUntil(new ICondition() {
 			@Override
 			public boolean test() throws Exception {
