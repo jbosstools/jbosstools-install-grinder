@@ -45,7 +45,8 @@ import org.junit.runner.RunWith;
 public class InstallFromCentralTest extends SWTBotEclipseTestCase {
 
 	private static final String EXCLUDED_CONNECTORS_PROPERTY = "org.jboss.tools.tests.installFromCentral.excludeConnectors";
-	private static final String EXCLUDED_CONNECTORS_SEPARATOR = ",";
+	private static final String INCLUDED_CONNECTORS_PROPERTY = "org.jboss.tools.tests.installFromCentral.includeConnectors";
+	private static final String CONNECTORS_SEPARATOR = ",";
 	private static int installationTimeout = 60 * 60000;
 	
 	/**
@@ -78,6 +79,7 @@ public class InstallFromCentralTest extends SWTBotEclipseTestCase {
 	}
 	
 	private Set<String> excludedConnectors;
+	private Set<String> includedConnectors;
 
 	@BeforeClass
 	public static void setUpBeforeClass() {
@@ -94,7 +96,12 @@ public class InstallFromCentralTest extends SWTBotEclipseTestCase {
 		this.excludedConnectors = new HashSet<String>();
 		String propertyValue = System.getProperty(EXCLUDED_CONNECTORS_PROPERTY);
 		if (propertyValue != null) {
-			this.excludedConnectors.addAll(Arrays.asList(propertyValue.split(EXCLUDED_CONNECTORS_SEPARATOR)));
+			this.excludedConnectors.addAll(Arrays.asList(propertyValue.split(CONNECTORS_SEPARATOR)));
+		}
+		this.includedConnectors = new HashSet<String>();
+		propertyValue = System.getProperty(INCLUDED_CONNECTORS_PROPERTY);
+		if (propertyValue != null) {
+			this.includedConnectors.addAll(Arrays.asList(propertyValue.split(CONNECTORS_SEPARATOR)));
 		}
 		try{
 			this.bot.viewByTitle("Welcome").close();
@@ -138,7 +145,10 @@ public class InstallFromCentralTest extends SWTBotEclipseTestCase {
 				if (check.getText() == null || !check.getText().toLowerCase().endsWith(" installed")) {
 					DataRetriever dataRetriever = new DataRetriever(check.widget, "connectorId");
 					Display.getDefault().syncExec(dataRetriever);
-					if (dataRetriever.getResult() != null && !this.excludedConnectors.contains(dataRetriever.getResult())) {
+					if (!this.excludedConnectors.isEmpty() && !this.excludedConnectors.contains(dataRetriever.getResult())) {
+						check.click();
+					}
+					if (!this.includedConnectors.isEmpty() && this.includedConnectors.contains(dataRetriever.getResult())) {
 						check.click();
 					}
 				}

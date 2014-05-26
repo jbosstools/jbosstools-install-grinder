@@ -23,6 +23,8 @@ Commandline flags:
 	-DSWTBOT_UPDATE_SITE=http://download.jboss.org/jbosstools/updates/requirements/swtbot/2.1.1.201307101628/	Where to get SWTBot from
 	-DJVM=/qa/tools/opt/jdk1.7.0_last/bin/java	Which JVM to use
         -DdebugPort=8000	Enable a debugPort to connect to a remote debugger
+	-DEXCLUDE_CONNECTORS=c1,c2,...
+	-DINCLUDE_CONNECTORS=c1,c2,...
 --------------------------------------------------------------
 
 	"""
@@ -180,9 +182,17 @@ void installFromCentral(String discoveryDirectoryUrl, File eclipseHome, String p
   Collection<String >additionalVMArgs = [];
   additionalVMArgs.add("-Djboss.discovery.directory.url=" + discoveryDirectoryUrl);
   additionalVMArgs.add("-Djboss.discovery.site.url=" + discoverySiteUrl);
-  additionalVMArgs.add("-Dorg.jboss.tools.tests.installFromCentral.excludeConnectors=" + connectorsToExclude.join(","))
+  if (System.properties['EXCLUDE_CONNECTORS'] != null) {
+     additionalVMArgs.add("-Dorg.jboss.tools.tests.installFromCentral.excludeConnectors=" + System.properties['EXCLUDE_CONNECTORS'])  
+  } else if (!connectorsToExclude.isEmpty()) {
+    // Preserve compatibility with previous commit JBIDE-17023
+    additionalVMArgs.add("-Dorg.jboss.tools.tests.installFromCentral.excludeConnectors=" + connectorsToExclude.join(","))
+  }
+  if (System.properties['INCLUDE_CONNECTORS'] != null) {
+     additionalVMArgs.add("-Dorg.jboss.tools.tests.installFromCentral.includeConnectors=" + System.properties['INCLUDE_CONNECTORS'])  
+  }
 
-	runSWTBotInstallRoutine(eclipseHome, productName, additionalVMArgs, "org.jboss.tools.tests.installation.InstallFromCentralTest");
+  runSWTBotInstallRoutine(eclipseHome, productName, additionalVMArgs, "org.jboss.tools.tests.installation.InstallFromCentralTest");
 }
 
 // Check for updates
