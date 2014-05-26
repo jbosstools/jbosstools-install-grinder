@@ -100,7 +100,7 @@ public class InstallTest extends SWTBotEclipseTestCase {
 			public String getFailureMessage() {
 				return "Could not see categories in tree";
 			}
-		});
+		}, installationTimeout);
 
 		if(selectedIUs != null){
 			//select IUs to install
