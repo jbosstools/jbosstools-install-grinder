@@ -113,7 +113,15 @@ public class InstallFromCentralTest extends SWTBotEclipseTestCase {
 		bot.waitUntil(new DefaultCondition() {
 			@Override
 			public boolean test() throws Exception {
-				return bot.checkBox("Show Installed").isEnabled();
+				boolean viewerLoaded = false;
+				try {
+					viewerLoaded = bot.checkBox("Show Installed").isEnabled();
+				} catch (WidgetNotFoundException ex) {
+					if (!viewerLoaded) {
+						viewerLoaded = bot.checkBox("Hide installed").isEnabled();
+					}
+				}
+				return viewerLoaded;
 			}
 			
 			@Override
@@ -125,7 +133,7 @@ public class InstallFromCentralTest extends SWTBotEclipseTestCase {
 			int i = 0;
 			SWTBotCheckBox check = null;
 			while ((check = this.bot.checkBox(i)) != null) {
-				if (check.getText() == null || !check.getText().contains("Show Installed")) {
+				if (check.getText() == null || !check.getText().toLowerCase().endsWith(" installed")) {
 					DataRetriever dataRetriever = new DataRetriever(check.widget, "connectorId");
 					Display.getDefault().syncExec(dataRetriever);
 					if (dataRetriever.getResult() != null && !this.excludedConnectors.contains(dataRetriever.getResult())) {

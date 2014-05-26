@@ -17,11 +17,12 @@ usage: groovy.sh testInstall.groovy <eclipse_home> <file_containing_list_of_site
 usage for installing selected units: groovy.sh -DIUs=iu1,iu2,... testInstall.groovy <eclipse_home> <repository_url>
 --------------------------------------------------------------
 Commandline flags:
-	-DIUs=iu1,iu2,...
-	-DADDSITE=http://updatesite1/,http://updatesite2/,http://updatesite3/,...
-	-DINSTALLATION_TIMEOUT_IN_MINUTES=30
-	-DSWTBOT_UPDATE_SITE=http://download.jboss.org/jbosstools/updates/requirements/swtbot/2.1.1.201307101628/
-	-DJVM=/qa/tools/opt/jdk1.7.0_last/bin/java
+	-DIUs=iu1,iu2,...	Select individual units
+	-DADDSITE=http://updatesite1/,http://updatesite2/,http://updatesite3/,...	Additional sites to make available
+	-DINSTALLATION_TIMEOUT_IN_MINUTES=30	How long to wait for discovery/installation/long operations
+	-DSWTBOT_UPDATE_SITE=http://download.jboss.org/jbosstools/updates/requirements/swtbot/2.1.1.201307101628/	Where to get SWTBot from
+	-DJVM=/qa/tools/opt/jdk1.7.0_last/bin/java	Which JVM to use
+        -DdebugPort=8000	Enable a debugPort to connect to a remote debugger
 --------------------------------------------------------------
 
 	"""
@@ -120,7 +121,6 @@ void runSWTBotInstallRoutine(File eclipseHome, String productName, Collection<St
 	if(osName.contains("mac")){
 		vmArgs += "-XstartOnFirstThread";
 	}
-	vmArgs += "-Dorg.eclipse.swtbot.search.timeout=300000";
 	vmArgs += "-Dusage_reporting_enabled=false";
 	if (System.getProperty("INSTALLATION_TIMEOUT_IN_MINUTES") != null) {
 		vmArgs += "-DINSTALLATION_TIMEOUT_IN_MINUTES=" + System.getProperty("INSTALLATION_TIMEOUT_IN_MINUTES");
