@@ -32,6 +32,8 @@ import org.junit.runner.RunWith;
  */
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class AddSiteTest extends SWTBotEclipseTestCase {
+
+	private static int installationTimeout = 60 * 60000;
 	
 	@Test
 	public void testAddSite() throws Exception {
@@ -78,7 +80,7 @@ public class AddSiteTest extends SWTBotEclipseTestCase {
 			public String getFailureMessage() {
 				return "Could not see categories in tree";
 			}
-		});
+		}, installationTimeout);
 		
 		try{
 			
