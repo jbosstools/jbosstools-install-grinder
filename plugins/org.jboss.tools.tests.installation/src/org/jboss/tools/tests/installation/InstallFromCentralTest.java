@@ -113,15 +113,17 @@ public class InstallFromCentralTest extends SWTBotEclipseTestCase {
 		bot.waitUntil(new DefaultCondition() {
 			@Override
 			public boolean test() throws Exception {
-				boolean viewerLoaded = false;
-				try {
-					viewerLoaded = bot.checkBox("Show Installed").isEnabled();
-				} catch (WidgetNotFoundException ex) {
-					if (!viewerLoaded) {
-						viewerLoaded = bot.checkBox("Hide installed").isEnabled();
+				String[] possibleLabels = new String[] { "Show Installed", "Show installed", "Hide installed" };
+				for (String label : possibleLabels) {
+					try {
+						if (bot.checkBox(label).isEnabled()) {
+							return true;
+						}
+					} catch (WidgetNotFoundException ex) {
+						// ignore and continue to next label
 					}
 				}
-				return viewerLoaded;
+				return false;
 			}
 			
 			@Override
