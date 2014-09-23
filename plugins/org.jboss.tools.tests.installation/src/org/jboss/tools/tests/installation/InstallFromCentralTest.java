@@ -145,11 +145,19 @@ public class InstallFromCentralTest extends SWTBotEclipseTestCase {
 				if (check.getText() == null || !check.getText().toLowerCase().endsWith(" installed")) {
 					DataRetriever dataRetriever = new DataRetriever(check.widget, "connectorId");
 					Display.getDefault().syncExec(dataRetriever);
-					if (!this.excludedConnectors.isEmpty() && !this.excludedConnectors.contains(dataRetriever.getResult())) {
-						check.click();
-					}
-					if (!this.includedConnectors.isEmpty() && this.includedConnectors.contains(dataRetriever.getResult())) {
-						check.click();
+					String connectorId = (String) dataRetriever.getResult();
+					if (connectorId != null) {
+						boolean included = false;
+						if (!this.includedConnectors.isEmpty()) {
+							included = this.includedConnectors.contains(connectorId);
+						} else if (!this.excludedConnectors.isEmpty()) {
+							included = !this.excludedConnectors.contains(connectorId);
+						} else { // default includes everything 
+							included = true;
+						}
+						if (included) {
+							check.click();
+						}
 					}
 				}
 				i++;
