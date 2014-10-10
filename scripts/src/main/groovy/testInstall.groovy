@@ -198,7 +198,7 @@ void installFromCentral(String discoveryDirectoryUrl, File eclipseHome, String p
 // Check for updates
 void checkForUpdates(File eclipseHome, String productName) {
 	println("Check for updates");
-	runSWTBotInstallRoutine(eclipseHome, productName, "", "org.jboss.tools.tests.installation.CheckForUpdatesTest");
+	runSWTBotInstallRoutine(eclipseHome, productName, [], "org.jboss.tools.tests.installation.CheckForUpdatesTest");
 }
 
 
