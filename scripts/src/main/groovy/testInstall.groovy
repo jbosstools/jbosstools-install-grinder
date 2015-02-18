@@ -25,6 +25,7 @@ Commandline flags:
         -DdebugPort=8000	Enable a debugPort to connect to a remote debugger
 	-DEXCLUDE_CONNECTORS=c1,c2,...
 	-DINCLUDE_CONNECTORS=c1,c2,...
+	-DDISCOVERY_SITE_PROPERTY=jboss.discovery.site.url (default)
 --------------------------------------------------------------
 
 	"""
@@ -135,6 +136,7 @@ void runSWTBotInstallRoutine(File eclipseHome, String productName, Collection<St
 	if (debugPort != null) {
 	   vmArgs += "-agentlib:jdwp=transport=dt_socket,address=localhost:" + debugPort + ",server=y,suspend=y";
 	}
+	println "vmArgs=" + vmArgs.join(" ")
 
 	proc.setJvmargs(vmArgs.join(" "));
 
@@ -183,7 +185,11 @@ void installFromCentral(String discoveryDirectoryUrl, File eclipseHome, String p
   String discoverySiteUrl=discoveryDirectoryUrl.substring(0,discoveryDirectoryUrl.lastIndexOf("/")+1);
   Collection<String >additionalVMArgs = [];
   additionalVMArgs.add("-Djboss.discovery.directory.url=" + discoveryDirectoryUrl);
-  additionalVMArgs.add("-Djboss.discovery.site.url=" + discoverySiteUrl);
+  if (System.properties['DISCOVERY_SITE_PROPERTY'] != null) {
+    additionalVMArgs.add("-D" + System.properties['DISCOVERY_SITE_PROPERTY'] + "=" + discoverySiteUrl)  
+  } else {
+    additionalVMArgs.add("-Djboss.discovery.site.url=" + discoverySiteUrl);
+  }
   if (System.properties['EXCLUDE_CONNECTORS'] != null) {
      additionalVMArgs.add("-Dorg.jboss.tools.tests.installFromCentral.excludeConnectors=" + System.properties['EXCLUDE_CONNECTORS'])  
   } else if (!connectorsToExclude.isEmpty()) {
