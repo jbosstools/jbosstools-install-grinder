@@ -130,6 +130,7 @@ public class InstallZipTest extends SWTBotEclipseTestCase {
 				return "Blocking while calculating deps";
 			}
 		}, installationTimeout);
+		this.bot.button("Next >").click();
 		try {
 			InstallTest.continueInstall(bot, "Installing Software");
 		} catch (InstallFailureException ex) {

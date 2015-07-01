@@ -7,12 +7,13 @@ void usage() {
     println """
 -------------------------------------------------------------
 Script to test installation
-usage: groovy.sh testInstall.groovy <eclipse_home> <file_containing_list_of_sites|repository_url|CHECK_FOR_UPDATES>(;)*
+usage: groovy.sh testInstall.groovy <eclipse_home> <file_containing_list_of_sites|repository_url|CHECK_FOR_UPDATES|MARKETPLACE=<label>>(;)*
   <eclipse_home>: an eclipse installation will be performed on
   <file_containing_list_of_sites> a file containing a list of p2-friendly URLs of repositories
                                   separated by spaces or line breaks
   <repository_url>: URL of a p2 repo to install from
   CHECK_FOR_UPDATES: will trigger the check for updates
+  MARKETPLACE=<label>: will install <label> from marketplace
 --------------------------------------------------------------
 usage for installing selected units: groovy.sh -DIUs=iu1,iu2,... testInstall.groovy <eclipse_home> <repository_url>
 --------------------------------------------------------------
@@ -56,6 +57,12 @@ void runInstallTest(String scenario, File eclipseHome, String product) {
 		installZipRepo(url, eclipseHome, product);
 	} else if (scenario.equals("CHECK_FOR_UPDATES")) {
 		checkForUpdates(eclipseHome, product);
+	} else if (scenario.startsWith("MARKETPLACE")) {
+		if (details.length < 2) {
+		   usage();
+		} else {
+		   installFromMarketplace(details[1], eclipseHome, product);
+		}
 	} else {
 		installRepo(url, eclipseHome, product);
 	}
@@ -201,6 +208,14 @@ void installFromCentral(String discoveryDirectoryUrl, File eclipseHome, String p
   }
 
   runSWTBotInstallRoutine(eclipseHome, productName, additionalVMArgs, "org.jboss.tools.tests.installation.InstallFromCentralTest");
+}
+
+// Install from marketplace
+void installFromMarketplace(String marketplaceLabel, File eclipseHome, String productName) {
+	println("Installing '" + marketplaceLabel + "' from marketplace");
+	Collection<String> additionalVMArgs = [];
+	additionalVMArgs.add("-DMARKETPLACE_LABEL=\"" + marketplaceLabel + "\"");
+	runSWTBotInstallRoutine(eclipseHome, productName, additionalVMArgs, "org.jboss.tools.tests.installation.InstallFromMarketplaceTest");
 }
 
 // Check for updates

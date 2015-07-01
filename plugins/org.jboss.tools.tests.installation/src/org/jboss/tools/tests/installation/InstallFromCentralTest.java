@@ -203,6 +203,7 @@ public class InstallFromCentralTest extends SWTBotEclipseTestCase {
 			Assert.fail("Could not install Central content from " + System.getProperty("org.jboss.tools.central.discovery") + "\n" + reason);
 		}
 		this.bot.button("Next >").click();
+		this.bot.button("Next >").click();
 		InstallTest.continueInstall(bot);
 	}
 

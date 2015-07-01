@@ -128,6 +128,7 @@ public class InstallTest extends SWTBotEclipseTestCase {
 				return "Blocking while calculating deps";
 			}
 		}, installationTimeout);
+		this.bot.button("Next >").click();
 		try {
 			continueInstall(bot);
 		} catch (InstallFailureException ex) {
@@ -149,7 +150,6 @@ public class InstallTest extends SWTBotEclipseTestCase {
 
 	public static void continueInstall(final SWTWorkbenchBot bot, final String shellTitle) throws InstallFailureException {
 		try {
-			bot.button("Next >").click();
 			bot.radio(0).click();
 			bot.button("Finish").click();
 			// wait for Security pop-up, or install finished.
