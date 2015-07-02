@@ -133,7 +133,7 @@ void runSWTBotInstallRoutine(File eclipseHome, String productName, Collection<St
 	}
 	vmArgs += "-Dusage_reporting_enabled=false";
 	vmArgs += "-Doomph.setup.questionnaire.skip=true";
-	vmArgs += "-Dorg.eclipse.oomph.setup.skip=true";
+	vmArgs += "-Doomph.setup.skip=true";
 	vmArgs += "-Dorg.eclipse.recommenders.stacktraces.rcp.skipReports=true"
 	if (System.getProperty("INSTALLATION_TIMEOUT_IN_MINUTES") != null) {
 		vmArgs += "-DINSTALLATION_TIMEOUT_IN_MINUTES=" + System.getProperty("INSTALLATION_TIMEOUT_IN_MINUTES");
