@@ -159,12 +159,14 @@ void runSWTBotInstallRoutine(File eclipseHome, String productName, Collection<St
 	args += "-testPluginName"; args += "org.jboss.tools.tests.installation";
 	args += "-className"; args += testClassName;
 	args += "-consoleLog";
+	args += "-clean";
+	args += "-showLocation";
 	args += "-debug";
 	proc.setArgs(args.join(" "));
 	proc.init();
 	int returnCode = proc.executeJava();
 	if (returnCode != 0) {
-		println("An error occured. Most probably because of wrong configuration of environment.");
+		println("An error occured; could be due to incorrect runtime environment configuration.");
 		System.exit(1);
 	}
 
@@ -176,7 +178,7 @@ void runSWTBotInstallRoutine(File eclipseHome, String productName, Collection<St
 				println("Install SUCCESS. Read " + report + " for more details.");
 				return;
 			} else {
-				println("Failed to install. Read " + report + " for details and see screenshots/");
+				println("Failed to install. Read " + report + " for details; see also screenshots/ folder.");
 				System.exit(1);
 			}
 		}
