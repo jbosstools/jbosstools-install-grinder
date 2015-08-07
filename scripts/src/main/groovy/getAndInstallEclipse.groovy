@@ -66,7 +66,7 @@ if (!cachedFile.isFile()) {
 		src: downloadURL,
 		dest: cachedFile)
 }
-// Unzip
+// Unzip/untar
 if (fileExtension.equals("zip")) {
 	new AntBuilder().unzip(
 		src: cachedFile.getAbsolutePath(),
@@ -78,3 +78,6 @@ if (fileExtension.equals("zip")) {
 		src: cachedFile.getAbsolutePath(),
 		dest: new File(".").getAbsolutePath())
 }
+
+// mark eclipse executable
+new AntBuilder().chmod(dir:new File(".").getAbsolutePath() + File.separator + "eclipse", perm:'+x', includes:"eclipse, eclipse.exe");

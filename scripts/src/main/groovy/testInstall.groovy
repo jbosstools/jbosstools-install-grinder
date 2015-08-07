@@ -4,16 +4,15 @@ import groovy.util.AntBuilder;
 import java.text.SimpleDateFormat;
 
 void usage() {
-    println """
+	println """
 -------------------------------------------------------------
 Script to test installation
 usage: groovy.sh testInstall.groovy <eclipse_home> <file_containing_list_of_sites|repository_url|CHECK_FOR_UPDATES|MARKETPLACE=<label>>(;)*
-  <eclipse_home>: an eclipse installation will be performed on
-  <file_containing_list_of_sites> a file containing a list of p2-friendly URLs of repositories
-                                  separated by spaces or line breaks
-  <repository_url>: URL of a p2 repo to install from
-  CHECK_FOR_UPDATES: will trigger the check for updates
-  MARKETPLACE=<label>: will install <label> from marketplace
+	<eclipse_home>: an eclipse installation will be performed on
+	<file_containing_list_of_sites> a file containing a list of p2-friendly URLs of repositories separated by spaces or line breaks
+	<repository_url>: URL of a p2 repo to install from
+	CHECK_FOR_UPDATES: will trigger the check for updates
+	MARKETPLACE=<label>: will install <label> from marketplace
 --------------------------------------------------------------
 usage for installing selected units: groovy.sh -DIUs=iu1,iu2,... testInstall.groovy <eclipse_home> <repository_url>
 --------------------------------------------------------------
@@ -23,7 +22,7 @@ Commandline flags:
 	-DINSTALLATION_TIMEOUT_IN_MINUTES=30	How long to wait for discovery/installation/long operations
 	-DSWTBOT_UPDATE_SITE=http://download.jboss.org/jbosstools/updates/requirements/swtbot/2.1.1.201307101628/	Where to get SWTBot from
 	-DJVM=/qa/tools/opt/jdk1.7.0_last/bin/java	Which JVM to use
-        -DdebugPort=8000	Enable a debugPort to connect to a remote debugger
+		-DdebugPort=8000	Enable a debugPort to connect to a remote debugger
 	-DEXCLUDE_CONNECTORS=c1,c2,...
 	-DINCLUDE_CONNECTORS=c1,c2,...
 	-DDISCOVERY_SITE_PROPERTY=jboss.discovery.site.url (default)
@@ -38,11 +37,15 @@ Commandline flags:
  * For Central, scenario can be of form
  * <directory.xml-url>=-<connectorToExclude>,-<connectorToExclue>
  * The = sign and parts after it are optional paremters:
- *  -<connectorToExclude> excludes a connector from installation, based on its id
+ *	-<connectorToExclude> excludes a connector from installation, based on its id
  */
 void runInstallTest(String scenario, File eclipseHome, String product) {
 	String[] details = scenario.split("=")
 	String url = details[0];
+
+	// TODO: possible workaround for oomph problems? Start Eclipse and shut down after 30 seconds, to enforce the -clean flag
+	//initializeEclipse(eclipseHome);
+
 	if (url.endsWith(".xml")) {
 		def connectorsToExclude= []
 		if (details.length > 1) {
@@ -59,15 +62,23 @@ void runInstallTest(String scenario, File eclipseHome, String product) {
 		checkForUpdates(eclipseHome, product);
 	} else if (scenario.startsWith("MARKETPLACE")) {
 		if (details.length < 2) {
-		   usage();
+			usage();
 		} else {
-		   installFromMarketplace(details[1], eclipseHome, product);
+			installFromMarketplace(details[1], eclipseHome, product);
 		}
 	} else {
 		installRepo(url, eclipseHome, product);
 	}
 }
 
+// TODO: possible workaround for oomph problems? Start Eclipse and shut down after 30 seconds, to enforce the -clean flag
+void initializeEclipse(File eclipseHome){
+	println(" === Launching: eclipse -clean === ");
+	String cmdLine = eclipseHome.toString() + File.separator + "eclipse -clean -consolelog -debug -console";
+	Process eclipseProc = cmdLine.execute();
+	eclipseProc.waitForOrKill(eclipseProc,30000);
+	println(" === Launched: eclipse -clean === ");
+}
 
 void installZipRepo(String repoUrl, File eclipseHome, String productName){
 
@@ -77,20 +88,17 @@ void installZipRepo(String repoUrl, File eclipseHome, String productName){
 		//local file, no need to download
 		additionalVMArgs += "-DZIP=" + repoUrl;
 	}else{
-        // wget zip file
+		// wget zip file
 		println("DOWNLOAD FIRST: " + repoUrl);
 
-	    String zipName = repoUrl.substring(repoUrl.lastIndexOf("/")+1);
-	    File zip = new File("./" + zipName);
-       	new AntBuilder().get(
-           	src: repoUrl,
-            dest: zip.getAbsolutePath());
-
+		String zipName = repoUrl.substring(repoUrl.lastIndexOf("/")+1);
+		File zip = new File("./" + zipName);
+		new AntBuilder().get(src: repoUrl, dest: zip.getAbsolutePath());
 		additionalVMArgs += "-DZIP=" + zip.getAbsolutePath();
 	}
 
-    // run install zip test
-    println("Installing content from " + repoUrl);
+	// run install zip test
+	println("Installing content from " + repoUrl);
 	runSWTBotInstallRoutine(eclipseHome, productName, additionalVMArgs, "org.jboss.tools.tests.installation.InstallZipTest");
 
 }
@@ -108,12 +116,12 @@ void installRepo(String repoUrl, File eclipseHome, String productName) {
 	println("Installing content from " + repoUrl);
 	Collection<String> additionalVMArgs = [];
 	additionalVMArgs += "-DUPDATE_SITE=" + repoUrl;
-    String ius = System.properties['IUs'];
-    if(ius != null){
-        ius=ius.replaceAll("\"","");
-        println("Units to install:" + ius);
-        additionalVMArgs += " -DIUs=\"" + ius + "\"";
-    }
+	String ius = System.properties['IUs'];
+	if(ius != null){
+		ius=ius.replaceAll("\"","");
+		println("Units to install:" + ius);
+		additionalVMArgs += " -DIUs=\"" + ius + "\"";
+	}
 	runSWTBotInstallRoutine(eclipseHome, productName, additionalVMArgs, "org.jboss.tools.tests.installation.InstallTest");
 }
 
@@ -142,7 +150,7 @@ void runSWTBotInstallRoutine(File eclipseHome, String productName, Collection<St
 
 	String debugPort = System.getProperty("debugPort");
 	if (debugPort != null) {
-	   vmArgs += "-agentlib:jdwp=transport=dt_socket,address=localhost:" + debugPort + ",server=y,suspend=y";
+		vmArgs += "-agentlib:jdwp=transport=dt_socket,address=localhost:" + debugPort + ",server=y,suspend=y";
 	}
 	println "vmArgs=" + vmArgs.join(" ")
 
@@ -164,11 +172,13 @@ void runSWTBotInstallRoutine(File eclipseHome, String productName, Collection<St
 	args += "-debug";
 	proc.setArgs(args.join(" "));
 	proc.init();
+	println(" === Launching: swtbottestapplication === ");
 	int returnCode = proc.executeJava();
 	if (returnCode != 0) {
 		println("An error occured; could be due to incorrect runtime environment configuration.");
 		System.exit(1);
 	}
+	println(" === Launched: swtbottestapplication === ");
 
 	File report_file = new File(eclipseHome.getAbsolutePath() + "/" + report);
 
@@ -192,25 +202,25 @@ void runSWTBotInstallRoutine(File eclipseHome, String productName, Collection<St
 // use http://download.jboss.org/jbosstools/discovery/nightly/core/trunk/
 void installFromCentral(String discoveryDirectoryUrl, File eclipseHome, String productName, Collection<String> connectorsToExclude) {
 	println("Installing content from " + discoveryDirectoryUrl);
-  String discoverySiteUrl=discoveryDirectoryUrl.substring(0,discoveryDirectoryUrl.lastIndexOf("/")+1);
-  Collection<String >additionalVMArgs = [];
-  additionalVMArgs.add("-Djboss.discovery.directory.url=" + discoveryDirectoryUrl);
-  if (System.properties['DISCOVERY_SITE_PROPERTY'] != null) {
-    additionalVMArgs.add("-D" + System.properties['DISCOVERY_SITE_PROPERTY'] + "=" + discoverySiteUrl)  
-  } else {
-    additionalVMArgs.add("-Djboss.discovery.site.url=" + discoverySiteUrl);
-  }
-  if (System.properties['EXCLUDE_CONNECTORS'] != null) {
-     additionalVMArgs.add("-Dorg.jboss.tools.tests.installFromCentral.excludeConnectors=" + System.properties['EXCLUDE_CONNECTORS'])  
-  } else if (!connectorsToExclude.isEmpty()) {
-    // Preserve compatibility with previous commit JBIDE-17023
-    additionalVMArgs.add("-Dorg.jboss.tools.tests.installFromCentral.excludeConnectors=" + connectorsToExclude.join(","))
-  }
-  if (System.properties['INCLUDE_CONNECTORS'] != null) {
-     additionalVMArgs.add("-Dorg.jboss.tools.tests.installFromCentral.includeConnectors=" + System.properties['INCLUDE_CONNECTORS'])  
-  }
+	String discoverySiteUrl=discoveryDirectoryUrl.substring(0,discoveryDirectoryUrl.lastIndexOf("/")+1);
+	Collection<String >additionalVMArgs = [];
+	additionalVMArgs.add("-Djboss.discovery.directory.url=" + discoveryDirectoryUrl);
+	if (System.properties['DISCOVERY_SITE_PROPERTY'] != null) {
+	additionalVMArgs.add("-D" + System.properties['DISCOVERY_SITE_PROPERTY'] + "=" + discoverySiteUrl)	
+	} else {
+	additionalVMArgs.add("-Djboss.discovery.site.url=" + discoverySiteUrl);
+	}
+	if (System.properties['EXCLUDE_CONNECTORS'] != null) {
+		additionalVMArgs.add("-Dorg.jboss.tools.tests.installFromCentral.excludeConnectors=" + System.properties['EXCLUDE_CONNECTORS'])	
+	} else if (!connectorsToExclude.isEmpty()) {
+	// Preserve compatibility with previous commit JBIDE-17023
+	additionalVMArgs.add("-Dorg.jboss.tools.tests.installFromCentral.excludeConnectors=" + connectorsToExclude.join(","))
+	}
+	if (System.properties['INCLUDE_CONNECTORS'] != null) {
+		additionalVMArgs.add("-Dorg.jboss.tools.tests.installFromCentral.includeConnectors=" + System.properties['INCLUDE_CONNECTORS'])	
+	}
 
-  runSWTBotInstallRoutine(eclipseHome, productName, additionalVMArgs, "org.jboss.tools.tests.installation.InstallFromCentralTest");
+	runSWTBotInstallRoutine(eclipseHome, productName, additionalVMArgs, "org.jboss.tools.tests.installation.InstallFromCentralTest");
 }
 
 // Install from marketplace
@@ -227,9 +237,7 @@ void checkForUpdates(File eclipseHome, String productName) {
 	runSWTBotInstallRoutine(eclipseHome, productName, [], "org.jboss.tools.tests.installation.CheckForUpdatesTest");
 }
 
-
 //// Launcher script
-
 if (args.length < 2) {
 	usage();
 	System.exit(2);
@@ -243,11 +251,10 @@ if (!eclipseHome.isDirectory()) {
 }
 
 if(System.properties['IUs'] && (args.length != 2)){
-    println("Installing selected/filtered Units is supported only from one repository_url!");
-    usage();
-    System.exit(2);
+	println("Installing selected/filtered Units is supported only from one repository_url!");
+	usage();
+	System.exit(2);
 }
-
 
 println "Preparing tests, installing framework";
 
@@ -264,7 +271,7 @@ Java proc = new org.apache.tools.ant.taskdefs.Java();
 // JBIDE-16304: support option to pass in alternate JVM path, eg., /qa/tools/opt/jdk1.7.0_last/bin/java or /qa/tools/opt/jdk1.6.0_last/bin/java
 // If not set fall back to default, which is proc.setJvm("java") so whatever's on the current PATH will be used (probably JDK 6)
 // In Jenkins job config, set in Groovy script file > Advanced... > Properties > 
-//    JVM=/qa/tools/opt/jdk1.7.0_last/bin/java
+//	JVM=/qa/tools/opt/jdk1.7.0_last/bin/java
 String JVM = System.properties['JVM'];
 if(JVM != null){
 		JVM=JVM.replaceAll("\"","");
@@ -276,7 +283,7 @@ proc.setFork(true);
 proc.setJar(new File(eclipseHome, "plugins").listFiles().find({it.getName().startsWith("org.eclipse.equinox.launcher_") && it.getName().endsWith(".jar")}).getAbsoluteFile());
 // JBIDE-16269: parameterize the URL from which SWTBot is installed, eg., with 
 // In Jenkins job config, set in Groovy script file > Advanced... > Properties > 
-//    SWTBOT_UPDATE_SITE=http://download.jboss.org/jbosstools/updates/requirements/swtbot/2.1.1.201307101628/
+//	SWTBOT_UPDATE_SITE=http://download.jboss.org/jbosstools/updates/requirements/swtbot/2.1.1.201307101628/
 String SWTBOT_UPDATE_SITE = System.properties['SWTBOT_UPDATE_SITE'];
 if(SWTBOT_UPDATE_SITE != null){
 		SWTBOT_UPDATE_SITE=SWTBOT_UPDATE_SITE.replaceAll("\"","");
@@ -285,7 +292,7 @@ else
 {
 		SWTBOT_UPDATE_SITE="http://download.eclipse.org/technology/swtbot/releases/latest/";
 }
-println("Install SWTBot from:" + SWTBOT_UPDATE_SITE);
+println("Install SWTBot from: " + SWTBOT_UPDATE_SITE);
 proc.setArgs("-application org.eclipse.equinox.p2.director " +
 		"-repository " + SWTBOT_UPDATE_SITE + "," +
 		"file:///" + companionRepoLocation + " " +
