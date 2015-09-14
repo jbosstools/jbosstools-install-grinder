@@ -72,11 +72,9 @@ if (fileExtension.equals("zip")) {
 		src: cachedFile.getAbsolutePath(),
 		dest: new File(".").getAbsolutePath())
 } else if (fileExtension.equals("tar.gz")) {
-	File tarFile = new File(eclipseCacheDirectory, cachedFile.getName()[0..- (".gz".length() + 1)])
-	if (!tarFile.isFile()) {
-		new AntBuilder().gunzip(src: cachedFile.getAbsolutePath(), dest: eclipseCacheDirectory.getAbsolutePath())
-	}
 	new AntBuilder().untar(
-		src: tarFile.getAbsolutePath(),
+		overwrite:true,
+		compression:"gzip",
+		src: cachedFile.getAbsolutePath(),
 		dest: new File(".").getAbsolutePath())
 }
