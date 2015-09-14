@@ -11,10 +11,10 @@ args.each {
 }
 
 File eclipseCacheDirectory = allProperties['eclipseCacheDirectory'] != null ? new File(allProperties['eclipseCacheDirectory']) : new File(".");
-String eclipseFlavour = allProperties['eclipseFlavour'] != null ? allProperties['eclipseFlavour'] : "jee";
-String releaseTrainId = allProperties['releaseTrainId'] != null ? allProperties['releaseTrainId'] : "luna";
-String versionLabel = allProperties['versionLabel'] != null ? allProperties['versionLabel'] : "SR2";
-String mirrorSite = allProperties['mirror'] != null ? allProperties['mirror'] : "http://www.eclipse.org/downloads/download.php?r=1&file=/technology/epp/downloads/release"; // or use http://download.eclipse.org/technology/epp/downloads/release/
+String eclipseFlavour = allProperties['eclipseFlavour'] ?: "jee";
+String releaseTrainId = allProperties['releaseTrainId'] ?: "luna";
+String versionLabel = allProperties['versionLabel'] ?: "SR2";
+String mirrorSite = allProperties['mirror'] ?: "http://www.eclipse.org/downloads/download.php?r=1&file=/technology/epp/downloads/release"; // or use http://download.eclipse.org/technology/epp/downloads/release/
 String eclipseBundleVersion = allProperties['eclipseBundleVersion']
 if (eclipseBundleVersion != null) {
 	String[] split = eclipseBundleVersion.split("\\.")
@@ -23,7 +23,6 @@ if (eclipseBundleVersion != null) {
 		versionLabel = split[1]
 	}
 }
-
 
 if (!eclipseCacheDirectory.canWrite()) {
 	println ("WARNING: You can't write to " + eclipseCacheDirectory);
@@ -50,7 +49,7 @@ String archLabel = System.properties['os.arch'].contains("64") ? "-x86_64" : "";
 
 // if downloadURL is set, just use that value for eclipseArchive and downloadURL
 String eclipseArchive = allProperties['downloadURL'] != null ? allProperties['downloadURL'].replaceAll(".+/(eclipse[^/]+\\."+fileExtension+")",'$1') : "eclipse-" + eclipseFlavour + "-" + releaseTrainId + "-" + (versionLabel == "R" && releaseTrainId[0] < 'k' ? "" : (versionLabel + "-")) + osLabel + archLabel + "." + fileExtension;
-String downloadURL = allProperties['downloadURL'] != null ? allProperties['downloadURL'] : mirrorSite + "/" + releaseTrainId + "/" + versionLabel +"/" + eclipseArchive;
+String downloadURL = allProperties['downloadURL'] ?: mirrorSite + "/" + releaseTrainId + "/" + versionLabel +"/" + eclipseArchive;
 
 // Support jobs that run on both 32- and 64-bit OS: ensure we're using 64-bit on 64-bit OS
 if (System.properties['os.arch'].contains("64")) {
