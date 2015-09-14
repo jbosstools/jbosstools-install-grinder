@@ -12,9 +12,9 @@ args.each {
 
 File eclipseCacheDirectory = allProperties['eclipseCacheDirectory'] != null ? new File(allProperties['eclipseCacheDirectory']) : new File(".");
 String eclipseFlavour = allProperties['eclipseFlavour'] != null ? allProperties['eclipseFlavour'] : "jee";
-String releaseTrainId = allProperties['releaseTrainId'] != null ? allProperties['releaseTrainId'] : "juno";
-String versionLabel = allProperties['versionLabel'] != null ? allProperties['versionLabel'] : "SR1";
-String mirrorSite = allProperties['mirror'] != null ? allProperties['mirror'] : "http://www.eclipse.org/downloads/download.php?r=1&file=/technology/epp/downloads/release";
+String releaseTrainId = allProperties['releaseTrainId'] != null ? allProperties['releaseTrainId'] : "luna";
+String versionLabel = allProperties['versionLabel'] != null ? allProperties['versionLabel'] : "SR2";
+String mirrorSite = allProperties['mirror'] != null ? allProperties['mirror'] : "http://www.eclipse.org/downloads/download.php?r=1&file=/technology/epp/downloads/release"; // or use http://download.eclipse.org/technology/epp/downloads/release/
 String eclipseBundleVersion = allProperties['eclipseBundleVersion']
 if (eclipseBundleVersion != null) {
 	String[] split = eclipseBundleVersion.split("\\.")
@@ -48,9 +48,18 @@ if (osLabel.contains("windows")) {
 }
 String archLabel = System.properties['os.arch'].contains("64") ? "-x86_64" : "";
 
-String eclipseArchive = "eclipse-" + eclipseFlavour + "-" + releaseTrainId + "-" + (versionLabel == "R" && releaseTrainId[0] < 'k' ? "" : (versionLabel + "-")) + osLabel + archLabel + "." + fileExtension;
-String downloadURL = mirrorSite + "/" + releaseTrainId + "/" + versionLabel +"/" + eclipseArchive;
-println("Will retrieve " + eclipseArchive + " from mirror site: " + mirrorSite);
+// if downloadURL is set, just use that value for eclipseArchive and downloadURL
+String eclipseArchive = allProperties['downloadURL'] != null ? allProperties['downloadURL'].replaceAll(".+/(eclipse[^/]+\\."+fileExtension+")",'$1') : "eclipse-" + eclipseFlavour + "-" + releaseTrainId + "-" + (versionLabel == "R" && releaseTrainId[0] < 'k' ? "" : (versionLabel + "-")) + osLabel + archLabel + "." + fileExtension;
+String downloadURL = allProperties['downloadURL'] != null ? allProperties['downloadURL'] : mirrorSite + "/" + releaseTrainId + "/" + versionLabel +"/" + eclipseArchive;
+
+// Support jobs that run on both 32- and 64-bit OS: ensure we're using 64-bit on 64-bit OS
+if (System.properties['os.arch'].contains("64")) {
+	//given eclipse-jee-mars-1-RC3-linux-gtk.tar.gz, convert to eclipse-jee-mars-1-RC3-linux-gtk-x86_64.tar.gz
+	//println(osLabel+"."+fileExtension+", "+osLabel+archLabel+"."+fileExtension);
+	downloadURL = downloadURL.replaceAll(osLabel+"."+fileExtension, osLabel+archLabel+"."+fileExtension);
+	eclipseArchive = eclipseArchive.replaceAll(osLabel+"."+fileExtension, osLabel+archLabel+"."+fileExtension);
+}
+println("Downloading: " + eclipseArchive + " from " + downloadURL + " (" + archLabel.replace("-","") + ")");
 
 File cachedFile = new File(eclipseCacheDirectory, eclipseArchive);
 if (!cachedFile.isFile()) {
