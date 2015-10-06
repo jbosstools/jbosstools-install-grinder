@@ -32,6 +32,9 @@ if (!eclipseCacheDirectory.canWrite()) {
 if (new File("eclipse").isDirectory()) {
 	new AntBuilder().delete( dir: new File("eclipse").getAbsolutePath() )
 }
+if (new File("Eclipse.app").isDirectory()) {
+	new AntBuilder().delete( dir: new File("Eclipse.app").getAbsolutePath() )
+}
 
 String osLabel = System.properties['os.name'].toLowerCase()
 String fileExtension = null
@@ -79,5 +82,12 @@ if (fileExtension.equals("zip")) {
 		dest: new File(".").getAbsolutePath())
 }
 
+String executablePath = null
+if (new File("eclipse").isDirectory()) {
+	executablePath = "eclipse"
+} else if (new File("Eclipse.app").isDirectory()) {
+	executablePath = "Eclipse.app/Contents/MacOS"
+}
+
 // mark eclipse executable
-new AntBuilder().chmod(dir:new File(".").getAbsolutePath() + File.separator + "eclipse", perm:'+x', includes:"eclipse, eclipse.exe");
+new AntBuilder().chmod(dir:new File(".").getAbsolutePath() + File.separator + executablePath, perm:'+x', includes:"eclipse, eclipse.exe");
