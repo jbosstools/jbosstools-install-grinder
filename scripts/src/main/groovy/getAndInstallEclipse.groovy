@@ -3,8 +3,9 @@ import org.apache.tools.ant.taskdefs.Get
 
 // this script can install many different variations of and Eclipse installation
 
-// interim EPP bundles
+// interim EPP bundles - don't use the same suffix convention as normal Eclipse and released EPP bundles
 // groovy -DeclipseCacheDirectory=/tmp/ -DdownloadURL="https://hudson.eclipse.org/packaging/job/mars.epp-tycho-build/325/artifact/org.eclipse.epp.packages/archive/20160121-0844_eclipse-jee-mars-2-RC1-linux.gtk.x86_64.tar.gz" getAndInstallEclipse.groovy
+// groovy -DeclipseCacheDirectory=/tmp/ -DdownloadURL="https://hudson.eclipse.org/packaging/job/mars.epp-tycho-build/325/artifact/org.eclipse.epp.packages/archive/20160121-0844_eclipse-jee-mars-2-RC1-linux.gtk.x86.tar.gz" getAndInstallEclipse.groovy
 
 // released EPP bundles (both URL formats supported)
 // groovy -DeclipseCacheDirectory=/tmp/ -DdownloadURL="http://www.eclipse.org/downloads/download.php?r=1&file=/technology/epp/downloads/release/neon/M4/eclipse-jee-neon-M4-linux-gtk-x86_64.tar.gz" getAndInstallEclipse.groovy
@@ -56,27 +57,31 @@ if (osLabel.contains("windows")) {
 	osLabel = "win32"
 	fileExtension = "zip"
 } else if (osLabel.contains("linux")) {
-	osLabel = "linux-gtk"
+	osLabel = allProperties['downloadURL'] && allProperties['downloadURL'].contains(".x86.") ? "linux.gtk" : "linux-gtk"
 	fileExtension = "tar.gz"
 } else if (osLabel.contains("mac")) {
 	osLabel = "macosx-cocoa"
 	fileExtension = "tar.gz"
 }
-String archLabel = System.properties['os.arch'].contains("64") ? "-x86_64" : ""
+String archLabel = System.properties['os.arch'].contains("64") ? (allProperties['downloadURL'] && allProperties['downloadURL'].contains(".x86.") ? ".x86_64" : "-x86_64") : ""
 
 // if downloadURL is set, just use that value for eclipseArchive and downloadURL
 String eclipseArchive = allProperties['downloadURL'] != null ? allProperties['downloadURL'].replaceAll(".+/([^/]+\\."+fileExtension+")",'$1') : "eclipse-" + eclipseFlavour + "-" + releaseTrainId + "-" + (versionLabel == "R" && releaseTrainId[0] < 'k' ? "" : (versionLabel + "-")) + osLabel + archLabel + "." + fileExtension
 String downloadURL = allProperties['downloadURL'] ?: mirrorSite + "/" + releaseTrainId + "/" + versionLabel +"/" + eclipseArchive
 
-
-// Support jobs that run on both 32- and 64-bit OS: ensure we're using 64-bit on 64-bit OS
+// Support jobs that run on both 32- and 64-bit OS: ensure we're using 64-bit on 64-bit OS for both filename conventions (.x86_64 and -x86-64)
 if (System.properties['os.arch'].contains("64")) {
+	if (downloadURL.contains(".x86.")) {
+		downloadURL = downloadURL.replaceAll(".x86.",".")
+		eclipseArchive = eclipseArchive.replaceAll(".x86.",".")
+	}
+
 	//given eclipse-jee-mars-1-RC3-linux-gtk.tar.gz, convert to eclipse-jee-mars-1-RC3-linux-gtk-x86_64.tar.gz
 	//println(osLabel+"."+fileExtension+", "+osLabel+archLabel+"."+fileExtension)
 	downloadURL = downloadURL.replaceAll(osLabel+"."+fileExtension, osLabel+archLabel+"."+fileExtension)
 	eclipseArchive = eclipseArchive.replaceAll(osLabel+"."+fileExtension, osLabel+archLabel+"."+fileExtension)
 }
-println("Downloading: " + eclipseArchive + " from " + downloadURL + " (" + archLabel.replace("-","") + ")")
+println("Downloading: " + eclipseArchive + " from " + downloadURL + " (" + archLabel + ")")
 
 File cachedFile = new File(eclipseCacheDirectory, eclipseArchive)
 if (!cachedFile.isFile()) {
