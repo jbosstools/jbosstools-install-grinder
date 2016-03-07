@@ -113,8 +113,21 @@ public class InstallFromCentralTest extends SWTBotEclipseTestCase {
 	@Test
 	public void testInstall() throws Exception {
 		SWTBotMenu helpMenu = this.bot.menu("Help");
-		helpMenu.menu("JBoss Central").click();
-		SWTBotMultiPageEditor centralEditor = (SWTBotMultiPageEditor) this.bot.multipageEditorByTitle("JBoss Central");
+		SWTBotMenu centralMenu = null;
+		try {
+			centralMenu = helpMenu.menu("Red Hat Central");
+		} catch (WidgetNotFoundException ex) {
+			// Most likely older JDT/JBDS
+			centralMenu = helpMenu.menu("JBoss Central");
+		}
+		centralMenu.click();
+		SWTBotMultiPageEditor centralEditor = null;
+		try {
+			centralEditor = (SWTBotMultiPageEditor) this.bot.multipageEditorByTitle("Red Hat Central");
+		} catch (WidgetNotFoundException ex) {
+			// Most likely older JDT/JBDS
+			centralEditor = (SWTBotMultiPageEditor) this.bot.multipageEditorByTitle("JBoss Central");
+		}
 		centralEditor.show();
 		centralEditor.activatePage("Software/Update");
 		bot.waitUntil(new DefaultCondition() {
