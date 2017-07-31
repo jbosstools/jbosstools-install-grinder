@@ -153,12 +153,12 @@ public class InstallTest extends SWTBotEclipseTestCase {
 			bot.radio(0).click();
 			bot.button("Finish").click();
 			// wait for Security pop-up, or install finished.
-			final SWTBotShell shell = bot.shell(shellTitle);
-			bot.waitWhile(new ICondition() {
+			
+			bot.waitUntil(new ICondition() {
 
 				@Override
 				public boolean test() throws Exception {
-					return shell.isActive();
+					return bot.activeShell().getText().matches("Security Warning|Software Updates");
 				}
 
 				@Override
