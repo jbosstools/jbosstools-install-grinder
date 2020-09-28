@@ -101,6 +101,7 @@ if (fileExtension.equals("zip")) {
 	new AntBuilder().untar(
 		overwrite:true,
 		compression:"gzip",
+		encoding: "UTF-8",
 		src: cachedFile.getAbsolutePath(),
 		dest: new File(".").getAbsolutePath())
 }
